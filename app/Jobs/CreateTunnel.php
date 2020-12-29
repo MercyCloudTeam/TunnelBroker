@@ -46,12 +46,16 @@ class CreateTunnel implements ShouldQueue
         $result[] = $ssh->exec((new TunnelController())->createTunnelCommand($tunnel));//执行创建Tunnel命令
         $result[] = $ssh->exec("ip link set dev {$tunnel->interface} up");//启动Tunnel
         if (isset($tunnel->ip4) && isset($tunnel->ip6)){//给网口添加地址
-            $result[] = $ssh->exec("ip addr add {$tunnel->ip6}/{$tunnel->ip6_cidr} dev {$tunnel->interface}");
-            $result[] = $ssh->exec("ip addr add {$tunnel->ip4}/{$tunnel->ip4_cidr} dev {$tunnel->interface}");
+            $ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next();
+            $ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
+            $result[] = $ssh->exec("ip addr add {$ip6}/{$tunnel->ip6_cidr} dev {$tunnel->interface}");
+            $result[] = $ssh->exec("ip addr add {$ip4}/{$tunnel->ip4_cidr} dev {$tunnel->interface}");
         }elseif(isset($tunnel->ip6)){
-            $result[] = $ssh->exec("ip addr add {$tunnel->ip6}/{$tunnel->ip6_cidr} dev {$tunnel->interface}");
+            $ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next();
+            $result[] = $ssh->exec("ip addr add {$ip6}/{$tunnel->ip6_cidr} dev {$tunnel->interface}");
         }elseif(isset($tunnel->ip4)){
-            $result[] = $ssh->exec("ip addr add {$tunnel->ip4}/{$tunnel->ip4_cidr} dev {$tunnel->interface}");
+            $ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
+            $result[] = $ssh->exec("ip addr add {$ip4}/{$tunnel->ip4_cidr} dev {$tunnel->interface}");
         }
         if (!empty($tunnel->asn_id)){//当需要配置BGP Tunnel
             $bgpResult = $ssh->exec((new FRRController())->createBGP($tunnel));//执行创建Tunnel命令

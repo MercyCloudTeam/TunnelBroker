@@ -31,11 +31,11 @@ class FRRController extends Controller
     {
         $command = $this->commandBGP($tunnel->node->asn);
         if (isset($tunnel->ip4)){
-            $ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
+            $ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
             $command .= "no nei {$ip4}";
         }
         if(isset($tunnel->ip6)){
-            $ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next();
+            $ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next()->next();
             $command .= "no nei {$ip6}";
         }
         $command .= "\"";
@@ -57,7 +57,7 @@ class FRRController extends Controller
         if (isset($tunnel->ip4)){
             $inRouteMap = env('IPV6_IN_ROUTEMAP','customer');
             $outRouteMap = env('IPV6_OUT_ROUTEMAP','rpki');
-            $v4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
+            $v4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
             $command .= "
             no nei {$v4}
             nei {$v4} remote-as {$asn->asn}
@@ -70,7 +70,7 @@ class FRRController extends Controller
         }
 
         if(isset($tunnel->ip6)){
-            $v6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next();
+            $v6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next()->next();
             $inRouteMap = env('IPV6_IN_ROUTEMAP','customer');
             $outRouteMap = env('IPV6_OUT_ROUTEMAP','rpki');
             $command .= "

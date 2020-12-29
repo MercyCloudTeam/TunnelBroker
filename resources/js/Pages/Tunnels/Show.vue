@@ -14,7 +14,7 @@
                     </div>
                     <div class="mt-6 text-gray-500">
                         服务器节点IPV4: {{tunnel.local}}<br>
-                        服务器节点IPV6: {{tunnel.ip6}}/{{tunnel.ip6_cidr}}<br>
+                        服务器节点IPV6: {{server_ip6}}/{{tunnel.ip6_cidr}}<br>
                         用户IPV4: {{client_ip4}}<br>
                         用户IPV6: {{client_ip6}}/{{tunnel.ip6_cidr}} <br>
                         用户接入IP: {{tunnel.remote}}
@@ -66,7 +66,8 @@
             'node',
             'client_ip4',
             'client_ip6',
-
+            'server_ip6',
+            'server_ip4',
         ],
         data() {
             return {
@@ -106,7 +107,7 @@
                             "      local: "+ this.tunnel.remote+"\n" +
                             "      addresses:\n" +
                             "        - \"" + this.client_ip6 + "/"+ this.tunnel.ip6_cidr+"\"\n" +
-                            "      gateway6: \""+ this.tunnel.ip6+"\""
+                            "      gateway6: \""+ this.server_ip6+"\""
                         break;
                     case 'net-tools':
                         this.configuration = "ifconfig sit0 up\n" +
@@ -117,14 +118,14 @@
                         break;
                     case 'mikrotik':
                         this.configuration = "/interface 6to4 add comment=\"MercyCloud TunnelBroker\" disabled=no local-address="+ this.tunnel.remote+" mtu=1280 name=sit1 remote-address="+ this.tunnel.local+"\n" +
-                            "/ipv6 route add comment=\"\" disabled=no distance=1 dst-address=2000::/3 gateway="+ this.tunnel.ip6+" scope=30 target-scope=10\n" +
+                            "/ipv6 route add comment=\"\" disabled=no distance=1 dst-address=2000::/3 gateway="+ this.server_ip6+" scope=30 target-scope=10\n" +
                             "/ipv6 address add address=" + this.client_ip6 + "/"+ this.tunnel.ip6_cidr+" advertise=no disabled=no eui-"+ this.tunnel.ip6_cidr+"=no interface=sit1\n"
                         break;
                     case 'netbsd':
                         this.configuration = "ifconfig gif0 create\n" +
                             "ifconfig gif0 tunnel "+ this.tunnel.remote+ " " + this.tunnel.local+"\n" +
-                            "ifconfig gif0 inet6 " + this.client_ip6 + " "+ this.tunnel.ip6+" prefixlen 128\n" +
-                            "route -n add -inet6 default "+ this.tunnel.ip6+"\n" +
+                            "ifconfig gif0 inet6 " + this.client_ip6 + " "+ this.server_ip6+" prefixlen 128\n" +
+                            "route -n add -inet6 default "+ this.server_ip6+"\n" +
                             "ifconfig gif0 up"
                         break;
                     case 'junos':
@@ -144,7 +145,7 @@
                             "routing-options {\n" +
                             "\trib inet6.0 {\n" +
                             "\t\tstatic {\n" +
-                            "\t\t\troute ::/0 next-hop "+ this.tunnel.ip6+";\n" +
+                            "\t\t\troute ::/0 next-hop "+ this.server_ip6+";\n" +
                             "\t\t}\n" +
                             "\t}\n" +
                             "}\n" +

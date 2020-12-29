@@ -27,15 +27,18 @@ class TunnelController extends Controller
      * 详细页面
      * @param Tunnel $tunnel
      * @return \Inertia\Response
+     * @throws \Exception
      */
     public function show(Tunnel $tunnel)
     {
 
         if (!empty($tunnel->ip4)){
-            $client_ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
+            $client_ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
+            $server_ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
         }
         if (!empty($tunnel->ip6)){
-            $client_ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next();
+            $client_ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next()->next();
+            $server_ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next();
         }
         return Inertia::render('Tunnels/Show',[
             'asn'=>$tunnel->asn,
@@ -43,6 +46,8 @@ class TunnelController extends Controller
             'node'=>$tunnel->node,
             'client_ip4'=>$client_ip4 ?? null,
             'client_ip6'=> $client_ip6?? null,
+            'server_ip4'=>$server_ip4 ?? null,
+            'server_ip6'=> $server_ip6?? null,
         ]);
     }
 

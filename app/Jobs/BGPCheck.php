@@ -63,7 +63,7 @@ class BGPCheck implements ShouldQueue
                         foreach ($tunnels as $tunnel){
                             $configure = false;
                             if (isset($tunnel->ip4)){
-                                $ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
+                                $ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
                                 if (!in_array($ip4,$frrList)){
                                     //FRR里面没找到的
                                     //重新运行配置
@@ -71,7 +71,7 @@ class BGPCheck implements ShouldQueue
                                 }
                             }
                             if(isset($tunnel->ip6)){
-                                $ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next();
+                                $ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next()->next();
                                 if (!in_array($ip6,$frrList)){
                                     $configure = true;
                                 }

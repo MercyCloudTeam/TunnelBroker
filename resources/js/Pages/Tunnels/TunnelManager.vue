@@ -124,7 +124,7 @@
                                         修改
                                     </button>
 
-                                    <inertia-link :href="route('tunnels.show',tunnel.id)" class="cursor-pointer ml-6 text-sm text-gray-400 underline focus:outline-none">
+                                    <inertia-link v-show="tunnel.status !== 2" :href="route('tunnels.show',tunnel.id)" class="cursor-pointer ml-6 text-sm text-gray-400 underline focus:outline-none">
                                         隧道信息
                                     </inertia-link>
 
