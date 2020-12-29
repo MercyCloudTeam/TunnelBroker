@@ -10,6 +10,7 @@
         "php": "^7.3|^8.0",
         "ext-curl": "*",
         "ext-json": "*",
+        "badcow/dns": "^4.0",
         "darkaonline/l5-swagger": "^8.0",
         "dcat/laravel-admin": "2.*",
         "fideloper/proxy": "^4.4",
@@ -22,7 +23,11 @@
         "laravel/sanctum": "^2.6",
         "laravel/telescope": "^4.4",
         "laravel/tinker": "^2.5",
+        "mews/captcha": "^3.2",
+        "owen-it/laravel-auditing": "^12.0",
         "phpseclib/phpseclib": "~3.0",
+        "rlanvin/php-ip": "^2.1",
+        "s1lentium/iptools": "^1.1",
         "tightenco/ziggy": "^0.9.4"
     },
     "require-dev": {

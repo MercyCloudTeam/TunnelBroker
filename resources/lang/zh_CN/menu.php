@@ -13,5 +13,13 @@ return [
         'extensions'    => '扩展',
         'scaffold'      => '代码生成器',
         'icons'         => '图标',
+
+        'node'         => '节点',
+        'tunnel'         => '隧道',
+        'ippool'         => 'IP池',
+        'ipallocation'         => 'IP分配',
+        'bgp_filter' => 'BGP过滤器',
+        'asn' => 'ASN',
+        'user'=>'用户'
     ],
 ];

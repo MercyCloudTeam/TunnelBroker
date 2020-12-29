@@ -30,7 +30,6 @@
 
                 <jet-section-border />
 
-                <delete-user-form class="mt-10 sm:mt-0" />
             </div>
         </div>
     </app-layout>
@@ -38,7 +37,6 @@
 
 <script>
     import AppLayout from '@/Layouts/AppLayout'
-    import DeleteUserForm from './DeleteUserForm'
     import JetSectionBorder from '@/Jetstream/SectionBorder'
     import LogoutOtherBrowserSessionsForm from './LogoutOtherBrowserSessionsForm'
     import TwoFactorAuthenticationForm from './TwoFactorAuthenticationForm'
@@ -50,7 +48,6 @@
 
         components: {
             AppLayout,
-            DeleteUserForm,
             JetSectionBorder,
             LogoutOtherBrowserSessionsForm,
             TwoFactorAuthenticationForm,

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\TunnelAPIController;
+use App\Http\Controllers\TunnelController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware(['auth:sanctum'])->group(function (){
+    Route::apiResource('/tunnel','TunnelAPIController');
+    Route::post('/ddns-tunnel/{tunnel}',[TunnelAPIController::class,'tunnelDDNSUpdate']);//动态IP用户 请求本接口即可实现对Remote IP的更新
 });
