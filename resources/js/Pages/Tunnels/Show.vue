@@ -94,8 +94,8 @@
                             "   address " + this.client_ip6 + "\n" +
                             "   netmask "+ this.tunnel.ip6_cidr+" \n" +
                             "   endpoint "+ this.tunnel.local+" \n" +
-                            "   local "+ this.tunnel.remote+" \n" +
-                            "   gateway"+ this.tunnel.ip6+" \n"
+                            "   local "+ this.tunnel.remote +" \n" +
+                            "   gateway "+ this.server_ip6 +" \n"
                         break;
                     case 'netplan':
                         this.configuration = "network:\n" +
@@ -175,7 +175,7 @@
                         this.configuration = "netsh interface teredo set state disabled\n" +
                             "netsh interface ipv6 add v6v4tunnel interface=IP6Tunnel localaddress="+ this.tunnel.remote+"  remoteaddress="+ this.tunnel.local+"\n" +
                             "netsh interface ipv6 add address interface=IP6Tunnel address= " + this.client_ip6 + "\n" +
-                            "netsh interface ipv6 add route prefix=::/0 interface=IP6Tunnel nexthop="+ this.tunnel.ip6;
+                            "netsh interface ipv6 add route prefix=::/0 interface=IP6Tunnel nexthop="+ this.server_ip6;
                         break;
                 }
             }
