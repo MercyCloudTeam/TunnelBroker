@@ -23,7 +23,7 @@
                     <div v-if="asn" class="mt-6 text-gray-500 ">
                         您的ASN: {{asn.asn}}<br>
                         咱们的ASN: {{node.asn}}<br>
-                        Peer地址:{{client_ip6}}
+                        Peer地址:{{server_ip6}}
                     </div>
                 </div>
                 <div class="bg-white sm:px-20 border-b border-gray-200 ">
