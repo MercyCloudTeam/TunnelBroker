@@ -31,7 +31,7 @@ class TunnelController extends Controller
      */
     public function show(Tunnel $tunnel)
     {
-
+        $this->authorize('view', $tunnel);
         if (!empty($tunnel->ip4)){
             $client_ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
             $server_ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
@@ -69,7 +69,8 @@ class TunnelController extends Controller
         if ($tunnel->remote !== $request->remote){
             //更新请求只针对更新IP
             $status = $tunnel->update([
-                'remote'=>$request->remote
+                'remote'=>$request->remote,
+                'status'=>5
             ]);
             $tunnel->refresh();//重新加载模型
             ChangeTunnelIP::dispatch($tunnel);//重载tunnel
@@ -116,14 +117,6 @@ class TunnelController extends Controller
         return $size;
     }
 
-    public function exampleConfigure(Tunnel $tunnel)
-    {
-        $local= $tunnel->remote; //对对端来说的local
-        $remote = $tunnel->local;
-        $ttl = $tunnel->ttl;
-        $gatewayv6 = $tunnel->ip6;
-    }
-
     /**
      * 页面返回
      * @return \Inertia\Response
@@ -165,6 +158,7 @@ class TunnelController extends Controller
         $tunnel->delete();
         return Redirect::back()->with('success', "Tunnel删除中");
     }
+
     /**
      * Store a newly created resource in storage.
      *

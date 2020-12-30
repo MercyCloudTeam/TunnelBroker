@@ -47,7 +47,7 @@ class TunnelAPIController extends Controller
         if ($tunnel !== $request->ip()){//如果请求IP与当前记录不同
             //数据记录更新
             $tunnel->update([
-                'status'=>4
+                'status'=>5
             ]);
             ChangeTunnelIP::dispatch($tunnel);//更改Tunnel对端ip
         }
@@ -77,6 +77,7 @@ class TunnelAPIController extends Controller
      */
     public function show(Tunnel $tunnel)
     {
+        $this->authorize('view', $tunnel);
         return new TunnelResource($tunnel);
     }
 
@@ -84,11 +85,14 @@ class TunnelAPIController extends Controller
      * Update the specified resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @param int $id
+     * @param Tunnel $tunnel
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function update(Request $request, Tunnel $tunnel)
     {
+        $this->authorize('update', $tunnel);
         $status = (new TunnelController())->updateAction($request,$tunnel);;
         if ($status) {
             return $this->jsonResult('SUCCESS');
