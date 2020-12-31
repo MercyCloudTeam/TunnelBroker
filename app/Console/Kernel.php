@@ -38,6 +38,8 @@ class Kernel extends ConsoleKernel
         $schedule->call(function (){
             Tunnel::where('status',4)->update(['status'=>2]);
         })->everySixHours();
+        //更新Cloudflare的代理IP
+        $schedule->command('cloudflare:reload')->daily();
     }
 
     /**

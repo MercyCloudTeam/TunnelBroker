@@ -24,6 +24,7 @@
         "laravel/telescope": "^4.4",
         "laravel/tinker": "^2.5",
         "mews/captcha": "^3.2",
+        "monicahq/laravel-cloudflare": "^1.7",
         "owen-it/laravel-auditing": "^12.0",
         "phpseclib/phpseclib": "~3.0",
         "rlanvin/php-ip": "^2.1",
