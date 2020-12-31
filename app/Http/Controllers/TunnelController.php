@@ -186,7 +186,7 @@ class TunnelController extends Controller
         $user = Auth::user();
         if (!empty($request->asn)){
             $asn = ASN::find($request->asn);
-            if ($asn->validate == "false"){
+            if ($asn->validate == false || $asn->user_id != $user->id){
                 return "ASN_NO_VALIDATE";
             }
         }
@@ -200,7 +200,7 @@ class TunnelController extends Controller
             'status'=>2,
             'user_id'=>$user->id,
             'node_id'=>$node->id,
-            'asn_id'=>$request->asn ?? null,
+            'asn_id'=>$asn->id ?? null,
         ]);
         if ($tunnel){
             return $tunnel;
