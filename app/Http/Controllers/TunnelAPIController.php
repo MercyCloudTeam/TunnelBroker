@@ -41,9 +41,11 @@ class TunnelAPIController extends Controller
      * API DDNS更新Tunnel IP
      * @param Tunnel $tunnel
      * @param Request $request
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function tunnelDDNSUpdate(Tunnel $tunnel,Request $request)
     {
+        $this->authorize('update', $tunnel);
         if ($tunnel !== $request->ip()){//如果请求IP与当前记录不同
             //数据记录更新
             $tunnel->update([

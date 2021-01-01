@@ -87,7 +87,7 @@ class ASNController extends Controller
         }
         $emails = $this->getASNEmail($request->asn);
         $validate = 0;
-        if (!empty($emails) && is_array($emails) && in_array($user->email,$emails) && isset($user->email_verified_at)){
+        if (!empty($emails) && is_array($emails) && in_array(strtolower($user->email),$emails) && isset($user->email_verified_at)){
             //用户注册时候的邮箱和ASN管理员邮箱一致 自动通过验证
             $validate=1;
             $email = $user->email;
