@@ -82,6 +82,10 @@ class NodeController extends AdminController
             $form->display('id');
             $form->text('title')->required();
             $form->ip('ip')->required();
+            $form->ip('public_ip')->help('可为空，公开配置的IPV6，当节点处于NAT后使用');;
+            $form->text('ip6')->required();
+            $form->text('public_ip6')->help('可为空，公开配置的IPV6，当节点处于NAT后使用');
+
             $form->text('username')->default('root')->value($form->model()->username);;
             $form->select('login_type')->options(config('status.node.login_type'))->default('password')->value($form->model()->login_type);
             $form->password('password')->value($form->model()->password);

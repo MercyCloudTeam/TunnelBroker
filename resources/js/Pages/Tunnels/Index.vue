@@ -8,7 +8,7 @@
 
         <div>
             <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-                <tunnel-manager  :tunnels="tunnels" :available-mode="availableMode"  :asn="asn" :defaultASN="defaultASN" :defaultNode="defaultNode" :nodes="nodes" :default-mode="defaultMode"></tunnel-manager>
+                <tunnel-manager  :tunnels="tunnels" :available-mode="availableMode" :display-a-s-n-select="displayASNSelect"  :asn="asn" :defaultASN="defaultASN" :defaultNode="defaultNode" :nodes="nodes" :default-mode="defaultMode"></tunnel-manager>
             </div>
         </div>
     </app-layout>
@@ -26,6 +26,7 @@
             'availableMode',
             'defaultMode',
             'defaultNode',
+            'displayASNSelect',
             'defaultASN',
         ],
 

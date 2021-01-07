@@ -128,18 +128,25 @@ class TunnelController extends Controller
         ])->get();
         $user = Auth::user();
         $asn = ASN::where('user_id',$user->id)->active()->get();
-
+        $firstNode = $node->first();
         $defaultASN = ($asn->isEmpty() ? null : $asn->first()->id);
         return Inertia::render('Tunnels/Index',[
             'tunnels'=>Auth::user()->tunnels,
             'availableMode'=>[
-                'sit'
+                'sit',
+//                'gre',
+//                'ipip',
+//                'ip6gre',
+//                'ip6ip6',
             ],
+            'displayASNSelect'=>isset($firstNode->bgp),
             'asn'=>$asn,
             'nodes'=>$node,
-            'defaultNode'=>$node->first()->id,
+            'defaultNode'=>$firstNode->id,
             'defaultASN'=>$defaultASN,
             'defaultMode'=>'sit'
+            //默认显示参数
+            // TODO 优化获取默认参数
         ]);
     }
 
@@ -190,6 +197,9 @@ class TunnelController extends Controller
                 return "ASN_NO_VALIDATE";
             }
         }
+        if (empty($node->bgp)){//如果节点不支持BGP 则选了等于没选
+            $asn = null;
+        }
         if ($user->tunnels->count() > $user->limit){
             return "TUNNEL_TOO_MANY";//超过创建Tunnel上限
         }
@@ -198,6 +208,7 @@ class TunnelController extends Controller
             'remote'=>$request->remote,
             'local'=>$node->ip,
             'status'=>2,
+            'ttl'=>255,//默认将TTL配置成255
             'user_id'=>$user->id,
             'node_id'=>$node->id,
             'asn_id'=>$asn->id ?? null,
@@ -262,9 +273,12 @@ class TunnelController extends Controller
             case "sit":
             case "gre":
             case "ipip":
+            case "ip6gre":
+            case "ip6ip6":
                 $command = "ip tunnel {$action} mode {$tunnel->mode} name {$tunnel->interface} ";
                 break;
             case "vxlan":
+                //TODO 分配Src Port
                 $command = "ip link {$action} {$tunnel->interface} type {$tunnel->mode} ";
                 break;
 

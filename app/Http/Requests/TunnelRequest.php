@@ -25,7 +25,7 @@ class TunnelRequest extends FormRequest
     public function rules()
     {
         return [
-            'mode'=>'required|in:sit,gre,ipip',
+            'mode'=>'required|in:sit,gre,ipip,ip6gre,ip6ip6',
             'node'=>'required|exists:nodes,id',
             'remote'=>['required','ip',new TunnelIP($this->get('mode'),$this->get('node'))],
             'dstport'=>'nullable|integer|max:65535|min:1024',//VXLAN 用户的可选配置

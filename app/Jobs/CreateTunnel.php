@@ -39,6 +39,7 @@ class CreateTunnel implements ShouldQueue
      * 创建操作
      * @param SSH2 $ssh
      * @param Tunnel $tunnel
+     * @throws \Exception
      */
     public function create(SSH2 $ssh,Tunnel $tunnel)
     {
@@ -79,6 +80,7 @@ class CreateTunnel implements ShouldQueue
      * Execute the job.
      *
      * @return void
+     * @throws \Exception
      */
     public function handle()
     {
@@ -163,7 +165,7 @@ class CreateTunnel implements ShouldQueue
         }
         $tunnel->update($update);
 
-        //v6默认使用 ::1  v4则按CIDR大小使用第一个IP
+        //v6默认使用 ::2  v4则按CIDR大小使用第一个IP
 
     }
 }

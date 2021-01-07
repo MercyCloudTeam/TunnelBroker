@@ -39,16 +39,24 @@ class TunnelIP implements Rule
     public function passes($attribute, $value)
     {
         //允许192.168内网IP创建Tunnel 但是得杀掉提交 多播ip 保留ip的提交
-       if (!filter_var($value, FILTER_VALIDATE_IP,  FILTER_FLAG_NO_RES_RANGE)){
-           return false;
-       }
+        if (!filter_var($value, FILTER_VALIDATE_IP,  FILTER_FLAG_NO_RES_RANGE)){
+            return false;
+        }
         //检测IP类型
         switch ($this->mode){
             case 'sit':
+            case 'ipip6':
             case 'ipip':
             case 'gre'://只支持V4作为Remote的隧道
                 $ip = new IP($value);
                 if ($ip->version == "IPv6"){
+                    return false;
+                }
+                break;
+            case 'ip6gre':
+            case 'ip6ip6':
+                $ip = new IP($value);
+                if ($ip->version == "IPv4"){
                     return false;
                 }
                 break;

@@ -34,13 +34,13 @@
                 <div class="col-span-6" v-if="nodes.length > 0">
                     <jet-label for="mode" value="接入节点" />
                     <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <select-input v-model="createTunnelForm.node" :error="createTunnelForm.error('node')" class="mt-1 block w-full"   >
+                        <select-input @change="canSelectASN" v-model="createTunnelForm.node" :error="createTunnelForm.error('node')" class="mt-1 block w-full"   >
                             <option v-for="node in nodes" :key="node.id" :value="node.id">{{ node.title }} {{node.ip}}</option>
                         </select-input>
                     </div>
                 </div>
 
-                <div class="col-span-6" v-if="asn.length > 0">
+                <div class="col-span-6" v-if="asn.length > 0 && displayASNSelect">
                     <jet-label for="mode" value="ASN" />
                     <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <select-input v-model="createTunnelForm.asn" :error="createTunnelForm.error('asn')" class="mt-1 block w-full"   >
@@ -226,8 +226,8 @@
             'defaultMode',
             'defaultNode',
             'defaultASN',
+            'displayASNSelect',
         ],
-
         data() {
             return {
                 createTunnelForm: this.$inertia.form({
@@ -255,8 +255,14 @@
                 TunnelBeingDeleted: null,
             }
         },
-
         methods: {
+
+            canSelectASN(node)
+            {
+                console.log(node)
+                console.log(this.nodes)
+            },
+
             createTunnel() {
                 this.createTunnelForm.post(route('tunnels.store'), {
                     preserveScroll: true,
