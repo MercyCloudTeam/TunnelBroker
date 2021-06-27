@@ -82,7 +82,7 @@
                 switch (value) {
                     case 'ip-route':
                         this.configuration = "modprobe ipv6\n" +
-                            "ip tunnel add tunnelbrokerio mode sit remote "+ this.tunnel.local+" local "+ this.tunnel.remote+" \n" +
+                            "ip tunnel add tunnelbrokerio mode sit remote "+ this.tunnel.local+" local "+ this.tunnel.remote+ "ttl "+this.tunnel.ttl +" \n"  +
                             "ip link set tunnelbrokerio up\n" +
                             "ip addr add " + this.client_ip6 + "/"+ this.tunnel.ip6_cidr+" dev tunnelbrokerio\n" +
                             "ip route add ::/0 dev tunnelbrokerio\n" +
@@ -95,7 +95,8 @@
                             "   netmask "+ this.tunnel.ip6_cidr+" \n" +
                             "   endpoint "+ this.tunnel.local+" \n" +
                             "   local "+ this.tunnel.remote +" \n" +
-                            "   gateway "+ this.server_ip6 +" \n"
+                            "   gateway "+ this.server_ip6 +" \n" +
+                            "   ttl "+ this.tunnel.ttl  +" \n"
                         break;
                     case 'netplan':
                         this.configuration = "network:\n" +
