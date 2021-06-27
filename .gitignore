@@ -18,3 +18,7 @@ public/.user.ini
 _ide_helper.php
 .phpstorm.meta.php
 dcat_admin_ide_helper.php
+public/css/app.css
+public/js/app.js
+public/js/app.js.LICENSE.txt
+public/mix-manifest.json

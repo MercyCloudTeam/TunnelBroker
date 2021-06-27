@@ -17,6 +17,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "inertiajs/inertia-laravel": "^0.2.4",
+        "irazasyed/telegram-bot-sdk": "^3.4",
         "laravel-lang/lang": "~8.0",
         "laravel/framework": "^8.12",
         "laravel/jetstream": "^1.6",
@@ -27,7 +28,7 @@
         "monicahq/laravel-cloudflare": "^1.7",
         "owen-it/laravel-auditing": "^12.0",
         "phpseclib/phpseclib": "~3.0",
-        "rlanvin/php-ip": "^2.1",
+        "rlanvin/php-ip": "dev-php8.0",
         "s1lentium/iptools": "^1.1",
         "tightenco/ziggy": "^0.9.4"
     },
