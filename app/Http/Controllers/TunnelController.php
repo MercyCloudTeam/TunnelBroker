@@ -238,7 +238,6 @@ class TunnelController extends Controller
     public function changeTunnelCommand(Tunnel $tunnel)
     {
         $command = $this->getCommonCommand($tunnel,'change');
-        $command .= "remote {$tunnel->remote}";
         return $command;
     }
 
@@ -251,10 +250,6 @@ class TunnelController extends Controller
     {
         //gre ipip sit用 ip tunnel命令 vxlan需要用 ip link命令
         $command = $this->getCommonCommand($tunnel,'add');
-        $command .= " remote {$tunnel->remote} local {$tunnel->local}";
-        empty($tunnel->ttl) ?: $command .= " ttl {$tunnel->ttl} ";
-        empty($tunnel->dstport) ?: $command .= " dstport {$tunnel->dstport} ";
-
         return $command;
     }
 
@@ -266,9 +261,6 @@ class TunnelController extends Controller
      */
     public function getCommonCommand(Tunnel $tunnel,$action)
     {
-//        switch ($action){
-//            case "add":
-//        }
         switch ($tunnel->mode) {
             case "sit":
             case "gre":
@@ -276,12 +268,26 @@ class TunnelController extends Controller
             case "ip6gre":
             case "ip6ip6":
                 $command = "ip tunnel {$action} mode {$tunnel->mode} name {$tunnel->interface} ";
+                switch ($action){
+                    case 'add':
+                        $command .= " remote {$tunnel->remote} local {$tunnel->local}";
+                        empty($tunnel->ttl) ?: $command .= " ttl {$tunnel->ttl} ";
+                        empty($tunnel->dstport) ?: $command .= " dstport {$tunnel->dstport} ";
+                        break;
+                    case 'change':
+                        $command .= "remote {$tunnel->remote}";
+                }
                 break;
             case "vxlan":
                 //TODO 分配Src Port
                 $command = "ip link {$action} {$tunnel->interface} type {$tunnel->mode} ";
                 break;
-
+            case 'wireguard':
+                $command = "ip link add dev $tunnel->interface type wireguard".PHP_EOL;
+                $command .= "wg set $tunnel->interface private-key /etc/wireguard/$tunnel->interface.key listen-port $tunnel->dstport".PHP_EOL;
+//                $command = "wg set $tunnel->interface peer '.$tunnel->remote.' allowed-ips '.$tunnel->local";
+            default:
+                return null;
         }
         return $command;
     }

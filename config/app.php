@@ -80,7 +80,7 @@ return [
     |
     */
 
-    'locale' => 'zh_CN',
+    'locale' => 'en',
 
     /*
     |--------------------------------------------------------------------------
@@ -175,7 +175,6 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
-        App\Providers\JetstreamServiceProvider::class,
 
     ],
 

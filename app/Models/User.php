@@ -8,31 +8,29 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
-use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
-use OwenIt\Auditing\Contracts\Auditable;
 
-class User extends Authenticatable implements Auditable,MustVerifyEmail
+class User extends Authenticatable
 {
     use HasApiTokens;
     use HasFactory;
     use HasProfilePhoto;
-    use HasTeams;
     use Notifiable;
     use TwoFactorAuthenticatable;
-    use \OwenIt\Auditing\Auditable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var string[]
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name',
+        'email',
+        'password',
     ];
 
     /**
-     * The attributes that should be hidden for arrays.
+     * The attributes that should be hidden for serialization.
      *
      * @var array
      */
@@ -44,7 +42,7 @@ class User extends Authenticatable implements Auditable,MustVerifyEmail
     ];
 
     /**
-     * The attributes that should be cast to native types.
+     * The attributes that should be cast.
      *
      * @var array
      */
@@ -60,18 +58,4 @@ class User extends Authenticatable implements Auditable,MustVerifyEmail
     protected $appends = [
         'profile_photo_url',
     ];
-
-
-    public function tunnels()
-    {
-        return $this->hasMany('App\Models\Tunnel');
-    }
-
-    public function asn()
-    {
-        return $this->hasMany('App\Models\ASN','user_id','id');
-    }
 }
-
-
-

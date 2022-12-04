@@ -1,12 +1,8 @@
 <?php
 
-use App\Http\Controllers\ASNController;
-use App\Http\Controllers\NIC\RIPEController;
-use App\Http\Controllers\TunnelController;
-use App\Jobs\ChangeTunnelIP;
-use App\Jobs\CreateIPAllocation;
-use App\Models\ASN;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,19 +16,18 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
-
-
-Route::middleware(['auth:sanctum', 'verified'])->group(function (){
-    Route::get('/dashboard', function () {
-        return Inertia\Inertia::render('Dashboard');
-    })->name('dashboard');
-
-    Route::resource('/tunnels',TunnelController::class)->except([
-        'create', 'edit'
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
     ]);
-    Route::get('/validate/asn',[ASNController::class,'index'])->name('bgp.validate');//验证ASN
-    Route::post('/validate/asn',[ASNController::class,'store']);
 });
 
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
+});
