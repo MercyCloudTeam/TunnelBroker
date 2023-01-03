@@ -17,10 +17,12 @@
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
+        "inertiajs/inertia-laravel": "^0.6.3",
         "irazasyed/telegram-bot-sdk": "^3.4",
         "laravel-lang/lang": "~8.0",
         "laravel/fortify": "^1.14",
         "laravel/framework": "^9.33",
+        "laravel/jetstream": "*",
         "laravel/sanctum": "^2.15",
         "laravel/telescope": "^4.9",
         "laravel/tinker": "^2.7",
@@ -42,8 +44,13 @@
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "extra": {
         "laravel": {
             "dont-discover": [
@@ -62,8 +69,6 @@
             "Tests\\": "tests/"
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

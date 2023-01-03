@@ -286,6 +286,7 @@ class TunnelController extends Controller
                 $command = "ip link add dev $tunnel->interface type wireguard".PHP_EOL;
                 $command .= "wg set $tunnel->interface private-key /etc/wireguard/$tunnel->interface.key listen-port $tunnel->dstport".PHP_EOL;
 //                $command = "wg set $tunnel->interface peer '.$tunnel->remote.' allowed-ips '.$tunnel->local";
+                break;
             default:
                 return null;
         }
