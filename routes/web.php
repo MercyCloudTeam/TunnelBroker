@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\ASNController;
+use App\Http\Controllers\NodeController;
+use App\Http\Controllers\TunnelController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -16,13 +19,15 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
+    $nodes = \App\Models\Node::all();
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+        'nodes'=> $nodes
     ]);
 });
+
+Route::get('/nodes',[NodeController::class,'index'])->name('node.index');
 
 Route::middleware([
     'auth:sanctum',
@@ -32,4 +37,12 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    Route::resource('/tunnels', TunnelController::class)->except([
+        'create', 'edit'
+    ]);
+
+    Route::get('/validate/asn',[ASNController::class,'index'])->name('bgp.validate');//验证ASN
+    Route::post('/validate/asn',[ASNController::class,'store']);
 });
+

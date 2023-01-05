@@ -16,12 +16,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use IPTools\Network;
 
 
 class TunnelController extends Controller
 {
+
+    public static array $availableModes = [
+        'sit',
+        'gre',
+        'ipip',
+        'ip6gre',
+        'ip6ip6',
+        'wireguard'
+    ];
 
     /**
      * 详细页面
@@ -128,23 +138,11 @@ class TunnelController extends Controller
         ])->get();
         $user = Auth::user();
         $asn = ASN::where('user_id',$user->id)->active()->get();
-        $firstNode = $node->first();
-        $defaultASN = ($asn->isEmpty() ? null : $asn->first()->id);
         return Inertia::render('Tunnels/Index',[
-            'tunnels'=>Auth::user()->tunnels,
-            'availableMode'=>[
-                'sit',
-//                'gre',
-//                'ipip',
-//                'ip6gre',
-//                'ip6ip6',
-            ],
-            'displayASNSelect'=>isset($firstNode->bgp),
+            'tunnels'=>$user->tunnels,
+            'availableMode'=>self::$availableModes,
             'asn'=>$asn,
             'nodes'=>$node,
-            'defaultNode'=>$firstNode->id,
-            'defaultASN'=>$defaultASN,
-            'defaultMode'=>'sit'
             //默认显示参数
             // TODO 优化获取默认参数
         ]);
@@ -186,6 +184,7 @@ class TunnelController extends Controller
     /**
      * @param TunnelRequest $request
      * @return string
+     * @throws ValidationException
      */
     public function storeAction(TunnelRequest $request)
     {
@@ -193,16 +192,18 @@ class TunnelController extends Controller
         $user = Auth::user();
         if (!empty($request->asn)){
             $asn = ASN::find($request->asn);
-            if ($asn->validate == false || $asn->user_id != $user->id){
-                return "ASN_NO_VALIDATE";
+            if (!$asn->validate || $asn->user_id != $user->id){
+                return throw ValidationException::withMessages([
+                    'asn' => ['ASN is not available'],
+                ]);
             }
         }
-        if (empty($node->bgp)){//如果节点不支持BGP 则选了等于没选
-            $asn = null;
+        if ($user->tunnels->count() > 5){
+            return throw ValidationException::withMessages([
+                'tunnel' => ["You've created too many Tunnels"],
+            ]);
         }
-        if ($user->tunnels->count() > $user->limit){
-            return "TUNNEL_TOO_MANY";//超过创建Tunnel上限
-        }
+
         $tunnel = Tunnel::create([
             'mode'=>$request->mode,
             'remote'=>$request->remote,

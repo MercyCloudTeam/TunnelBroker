@@ -117,6 +117,7 @@ class CalculationBandwidth implements ShouldQueue
             $in = $this->cacheBandwidth("{$tunnel->interface}-in",$thisre,$tunnel->in);
             $out = $this->cacheBandwidth("{$tunnel->interface}-out",$thistr,$tunnel->out);
             if ($in !== $tunnel->in || $out !== $tunnel->out ){ //发生改变才更新
+                //todo 20230106 Table Change
                 $tunnel->update([
                     'in'=>$in,
                     'out'=>$out
@@ -124,8 +125,6 @@ class CalculationBandwidth implements ShouldQueue
             }
 
         }
-
-
     }
 
 

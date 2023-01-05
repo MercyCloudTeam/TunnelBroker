@@ -32,7 +32,7 @@ class CreateTunnel implements ShouldQueue
 
     public function fail($exception = null)
     {
-//        \Log::error('Create Tunnel Error', $exception);
+        \Log::error('Create Tunnels Error', $exception);
     }
 
     /**
@@ -58,7 +58,7 @@ class CreateTunnel implements ShouldQueue
             $ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
             $result[] = $ssh->exec("ip addr add {$ip4}/{$tunnel->ip4_cidr} dev {$tunnel->interface}");
         }
-        if (!empty($tunnel->asn_id)){//当需要配置BGP Tunnel
+        if (!empty($tunnel->asn_id)){//当需要配置BGP Tunnels
             $bgpResult = $ssh->exec((new FRRController())->createBGP($tunnel));//执行创建Tunnel命令
             if (!empty($bgpResult)){
                 \Log::info('创建Tunnel操作时BGP配置出现错误:',[$bgpResult]);
@@ -87,7 +87,7 @@ class CreateTunnel implements ShouldQueue
         Tunnel::where([
             ['status','=',2],
         ])->chunk(50,function ($tunnels){
-            //创建IP规则，从IP池中生成，当tunnel呗删除则清空分配的id，但是已经创建的分配记录不会呗删除，优先使用已被分配的、否则再通过IP池创建新记录
+            //创建IP规则，从IP池中生成，当tunnel被删除则清空分配的id，但是已经创建的分配记录不会被删除，优先使用已被分配的、否则再通过IP池创建新记录
             foreach ($tunnels as $tunnel){
                 if (isset($tunnel->ip4) ||isset($tunnel->ip6)){
                     //如果在等待创建期间已经分配了IP的话则删除重新分配
@@ -95,6 +95,7 @@ class CreateTunnel implements ShouldQueue
                 }
                 $this->ipType($tunnel);
                 $tunnel->refresh();//重新加载模型
+                //TODO 优化 复用链接
                 $ssh = NodeController::connect($tunnel->node);
                 $this->create($ssh,$tunnel);
             }

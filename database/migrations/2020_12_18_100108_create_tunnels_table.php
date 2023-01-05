@@ -15,8 +15,7 @@ class CreateTunnelsTable extends Migration
     {
         Schema::create('tunnels', function (Blueprint $table) {
             $table->id();
-            $table->string('mode',20)->default('sit');//gre sit ipip
-            $table->ipAddress('local')->nullable();//若无特殊指定则按Node的
+            $table->string('mode');//gre sit ipip
             $table->ipAddress('remote');
             $table->ipAddress('ip4')->nullable();
             $table->integer('ip4_cidr')->default(30);//这个网段的子网網掩
@@ -32,14 +31,13 @@ class CreateTunnelsTable extends Migration
             $table->string('interface')->nullable();
             $table->integer('srcport')->nullable();
             $table->integer('dstport')->nullable();//预留给VXLAN等其他端口协议使用
-            $table->string('in')->default("0");//入网流量
-            $table->string('out')->default("0");//出网流量
+
             $table->json('config')->nullable();
-            $table->bigInteger('asn_id')->nullable();
             $table->bigInteger('user_id');
             $table->bigInteger('node_id');
             $table->softDeletes();//软删除
             $table->timestamps();
+
         });
 
         //问题 通过AS-Set包含过滤 若用户的AS-set包含了 Tier1 造成“路由倒灌”

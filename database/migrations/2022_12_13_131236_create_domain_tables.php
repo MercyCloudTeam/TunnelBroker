@@ -35,11 +35,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::table('nodes',function (Blueprint $table){
-           $table->dropColumn('asn');
-           $table->dropColumn('bgp');
-        });
-
         Schema::create('nodes_components',function (Blueprint $table){
             $table->id();
             $table->bigInteger('node_id');

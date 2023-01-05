@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class UpdateNodeTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,11 @@ class UpdateNodeTable extends Migration
      */
     public function up()
     {
-
-        Schema::create('analysis',function (Blueprint $table){
+        Schema::create('tunnel_bandwidth', function (Blueprint $table) {
             $table->id();
-            $table->string('type');//不同类型的报告
-            $table->json('data');
-            $table->integer('status')->default(1);
-            $table->bigInteger('type_id');//关联不同类型的ID
+            $table->foreignId('tunnel_id');
+            $table->bigInteger('in')->default(0);//入网流量
+            $table->bigInteger('out')->default(0);//出网流量
             $table->timestamps();
         });
     }
@@ -31,6 +29,6 @@ class UpdateNodeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('analysis');
+        Schema::dropIfExists('tunnel_bandwidth');
     }
-}
+};

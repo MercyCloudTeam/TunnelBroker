@@ -19,6 +19,16 @@ return new class extends Migration
             $table->string('slug');
             $table->json('data');
             $table->string('description');
+            $table->double('price');
+            $table->bigInteger('limit');
+            $table->bigInteger('bandwidth');
+            $table->timestamps();
+        });
+
+        Schema::create('plan_user', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('plan_id');
+            $table->foreignId('user_id');
             $table->timestamps();
         });
     }
@@ -31,5 +41,6 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists('plans');
+        Schema::dropIfExists('plan_user');
     }
 };

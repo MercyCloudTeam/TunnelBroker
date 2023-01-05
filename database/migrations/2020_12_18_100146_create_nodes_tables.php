@@ -25,10 +25,15 @@ class CreateNodesTables extends Migration
             $table->string('status')->default(1);
             $table->integer('limit')->default(-1);
             $table->boolean('public')->default(true);//公开？
-            $table->string('bgp')->nullable()->default('frr');//使用的BGP组件
             $table->json('config')->nullable();
-            $table->integer('asn')->nullable();
             $table->timestamps();
+
+            //2023-1-3 Remove
+//            $table->string('bgp')->nullable()->default('frr');//使用的BGP组件
+//            $table->integer('asn')->nullable();
+            $table->ipAddress('ip6')->nullable();//V6接口Ip
+            $table->ipAddress('public_ip')->nullable();//公开显示的V4
+            $table->ipAddress('public_ip6')->nullable();//公开显示的V6
         });
 
         //已经分配的IP

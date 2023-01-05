@@ -5,10 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Node;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 use phpseclib3\Net\SSH2;
 
 class NodeController extends Controller
 {
+
+    public function index()
+    {
+        $nodes = Node::all();
+        return Inertia::render('Nodes/Index', [
+            'nodes' => $nodes,
+        ]);
+    }
 
     /**
      * 连接服务器
@@ -25,6 +34,7 @@ class NodeController extends Controller
                 $ssh->login($node->username, $node->password);
                 break;
             case "rsa":
+                //Todo RSA登录
 //                $ssh->login($node->username,new Crypt)
                 break;
         }

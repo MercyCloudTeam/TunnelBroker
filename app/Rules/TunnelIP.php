@@ -60,6 +60,8 @@ class TunnelIP implements Rule
                     return false;
                 }
                 break;
+            case 'wireguard':
+                break;
             default:
                 return false;
         }
@@ -80,6 +82,6 @@ class TunnelIP implements Rule
      */
     public function message()
     {
-        return 'IP非法(格式不正确/已被使用/非法提交)，（拒绝阴间IP）';
+        return 'IP address error (incorrectly formatted/used/illegally submitted)';
     }
 }
