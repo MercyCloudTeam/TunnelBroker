@@ -26,15 +26,9 @@ class NodeController extends AdminController
 //           dd( $grid->getVisibleColumnNames());
             $grid->column('id')->sortable();
             $grid->column('ip');
-            $grid->column('username');
-            $grid->column('password');
-            $grid->column('login_type');
+            $grid->column('ip6');
             $grid->column('port');
             $grid->column('status');
-            $grid->column('limit');
-            $grid->column('bgp');
-            $grid->column('config');
-            $grid->column('asn');
             $grid->column('created_at');
             $grid->column('updated_at')->sortable();
 
@@ -82,9 +76,9 @@ class NodeController extends AdminController
             $form->display('id');
             $form->text('title')->required();
             $form->ip('ip')->required();
-            $form->ip('public_ip')->help('可为空，公开配置的IPV6，当节点处于NAT后使用');;
-            $form->text('ip6')->required();
-            $form->text('public_ip6')->help('可为空，公开配置的IPV6，当节点处于NAT后使用');
+            $form->ip('public_ip')->help('Can be empty, publicly configured IPV6, used when the node is behind NAT');;
+            $form->text('ip6');
+            $form->text('public_ip6')->help('Can be empty, publicly configured IPV6, used when the node is behind NAT');
 
             $form->text('username')->default('root')->value($form->model()->username);;
             $form->select('login_type')->options(config('status.node.login_type'))->default('password')->value($form->model()->login_type);
@@ -93,9 +87,7 @@ class NodeController extends AdminController
             $form->number('port')->max(65535)->min(1)->default(22)->value($form->model()->port);;
             $form->select('status')->options(config('status.node.status'))->default(1);
             $form->number('limit')->default(10000);
-            $form->select('bgp')->options(config('status.node.bgp'))->placeholder('为空则不可添加BGP Tunnel');
             $form->keyValue('config')->value($form->model()->config);
-            $form->number('asn')->min(1)->default(114514);
 
             $form->display('created_at');
             $form->display('updated_at');

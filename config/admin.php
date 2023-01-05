@@ -11,7 +11,7 @@ return [
     | login page.
     |
     */
-    'name' => 'MercyCloud TunnelBroker',
+    'name' => 'TunnelBroker',
 
     /*
     |--------------------------------------------------------------------------
@@ -22,7 +22,7 @@ return [
     | `img` tag, eg '<img src="http://logo-url" alt="Admin logo">'.
     |
     */
-    'logo' => 'MercyCloud TunnelBroker',
+    'logo' => 'TunnelBroker',
 
     /*
     |--------------------------------------------------------------------------
