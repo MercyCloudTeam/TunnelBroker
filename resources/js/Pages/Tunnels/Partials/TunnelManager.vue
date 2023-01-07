@@ -35,11 +35,33 @@ const createTunnel = () => {
     });
 }
 
+const displayPortInput = ref(false);
+const displayPubKeyInput = ref(false);
+
+
+
 const createTunnelForm = useForm({
     remote: '',
     mode: '',
-    node:''
+    node:'',
+    pubkey: null,
+    port: null
 })
+
+const modeChange = () => {
+    console.log(createTunnelForm.mode);
+    switch (createTunnelForm.mode){
+        case 'wireguard':
+            displayPortInput.value = true;
+            displayPubKeyInput.value  = true;
+            break
+        default:
+            displayPortInput.value = false;
+            displayPubKeyInput.value  = false;
+            break
+    }
+}
+
 
 </script>
 
@@ -56,17 +78,42 @@ const createTunnelForm = useForm({
         </template>
 
         <template #form>
-            <!-- Token Name -->
+            <!-- Remote IP -->
             <div class="col-span-6">
                 <InputLabel for="remote" value="Remote IP" />
                 <TextInput
                     id="remote"
-                    v-model="createTunnelForm.remote"
+                    v-model.trim="createTunnelForm.remote"
                     type="text"
                     class="mt-1 block w-full"
                     autofocus
                 />
                 <InputError :message="createTunnelForm.errors.remote" class="mt-2" />
+            </div>
+            <!-- Pubkey -->
+            <div class="col-span-6" v-if="displayPubKeyInput">
+                <InputLabel for="pubkey" value="Pubkey" />
+                <TextInput
+                    id="remote"
+                    v-model.trim="createTunnelForm.pubkey"
+                    type="text"
+                    class="mt-1 block w-full"
+                    autofocus
+                />
+                <InputError :message="createTunnelForm.errors.pubkey" class="mt-2" />
+            </div>
+
+            <!-- port -->
+            <div class="col-span-6" v-if="displayPortInput">
+                <InputLabel for="port" value="Port" />
+                <TextInput
+                    id="remote"
+                    v-model.number="createTunnelForm.port"
+                    type="text"
+                    class="mt-1 block w-full"
+                    autofocus
+                />
+                <InputError :message="createTunnelForm.errors.port" class="mt-2" />
             </div>
 
             <!-- Node -->
@@ -87,7 +134,7 @@ const createTunnelForm = useForm({
                 <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div v-for="mode in availableMode" :key="mode">
                         <label class="flex items-center">
-                            <input type="radio" v-model="createTunnelForm.mode" :value="mode" >
+                            <input type="radio" @change="modeChange" v-model="createTunnelForm.mode" :value="mode" >
                             <span class="ml-2 text-sm text-gray-600">{{ mode }}</span>
                         </label>
                     </div>

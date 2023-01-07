@@ -36,47 +36,18 @@ class DNSConfigure implements ShouldQueue
      */
     public function handle()
     {
-
-        $zone = new Zone('example.com.');
-        $zone->setDefaultTtl(3600);
-
-        $soa = new ResourceRecord;
-        $soa->setName('@');
-        $soa->setClass(Classes::INTERNET);
-        $soa->setRdata(Factory::Soa(
-            'example.com.',
-            'post.example.com.',
-            date('YmdG'),
-            3600,
-            14400,
-            604800,
-            3600
-        ));
-        $ns1 = new ResourceRecord;
-        $ns1->setName('@');
-        $ns1->setClass(Classes::INTERNET);
-        $ns1->setRdata(Factory::Ns('ns1.nameserver.com.'));
-
-        $ns2 = new ResourceRecord;
-        $ns2->setName('@');
-        $ns2->setClass(Classes::INTERNET);
-        $ns2->setRdata(Factory::Ns('ns2.nameserver.com.'));
-
-        $ips = IPAllocation::whereNotNull('tunnel_id')->get();
-
-        foreach ($ips as $ip){
-            $r = new ResourceRecord;
-            $r->setName(env('TUNNEL_NAME_PREFIX','tun').$ip->tunnel_id);
-            $r->setName(Factory::PTR(''));
-        }
-        $r = new ResourceRecord;
-
-
-        $zone->addResourceRecord($soa);
-        $zone->addResourceRecord($ns1);
-        $zone->addResourceRecord($ns2);
-        $builder = new AlignedBuilder();
-        echo $builder->build($zone);
+//        $ips = IPAllocation::whereNotNull('tunnel_id')->get();
+//
+//        foreach ($ips as $ip){
+//            $r = new ResourceRecord;
+//            $r->setName(env('TUNNEL_NAME_PREFIX','tun').$ip->tunnel_id);
+//            //TODO 生成PTR配置文件
+//            $r->setName(Factory::PTR($ip->ip));
+//        }
+//        $r = new ResourceRecord;
+//
+//        $builder = new AlignedBuilder();
+//        echo $builder->build($zone);
 
     }
 }

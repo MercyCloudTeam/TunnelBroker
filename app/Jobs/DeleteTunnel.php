@@ -16,6 +16,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use IPTools\Network;
+use Log;
 
 class DeleteTunnel implements ShouldQueue
 {
@@ -43,11 +44,11 @@ class DeleteTunnel implements ShouldQueue
     {
         $ssh = NodeController::connect($this->tunnel->node);
         $result[] = $ssh->exec((new TunnelController())->deleteTunnelCommand($this->tunnel));//执行创建Tunnel命令
-        if (!empty($this->tunnel->asn_id)){//清理BGP配置
+        if (!empty($this->tunnel->asn_id)) {//清理BGP配置
             $result[] = $ssh->exec((new FRRController())->deleteBGP($this->tunnel));
         }
-        \Log::info('exec result',$result);
-        $this->tunnel->update(['status'=>1]);
+        Log::info('exec result', $result);
+        $this->tunnel->update(['status' => 1]);
     }
 
 }

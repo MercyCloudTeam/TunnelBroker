@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      *
@@ -19,16 +18,17 @@ return new class extends Migration
             $table->string('slug');
             $table->json('data');
             $table->string('description');
-            $table->double('price');
             $table->bigInteger('limit');
             $table->bigInteger('bandwidth');
             $table->timestamps();
         });
 
-        Schema::create('plan_user', function (Blueprint $table) {
+        Schema::create('user_plan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('plan_id');
             $table->foreignId('user_id');
+            $table->dateTime('expire_at');
+            $table->integer('reset_day'); // Reset Bandwidth Calendar Day
             $table->timestamps();
         });
     }
@@ -41,6 +41,6 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists('plans');
-        Schema::dropIfExists('plan_user');
+        Schema::dropIfExists('user_plan');
     }
 };

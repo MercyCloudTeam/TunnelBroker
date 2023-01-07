@@ -61,6 +61,7 @@ class TunnelIP implements Rule
                 }
                 break;
             case 'wireguard':
+            case 'vxlan':
                 break;
             default:
                 return false;

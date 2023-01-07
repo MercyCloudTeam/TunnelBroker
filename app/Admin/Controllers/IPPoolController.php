@@ -10,6 +10,8 @@ use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Show;
 use Dcat\Admin\Http\Controllers\AdminController;
+use IPTools\IP;
+use IPTools\Network;
 
 class IPPoolController extends AdminController
 {
@@ -80,7 +82,7 @@ class IPPoolController extends AdminController
             $form->text('ip')->required();
             $form->text('cidr')->required()->default(48);
             $form->number('allocation_size')->min(1)->max(128)->default(64)->required();
-            $form->select('ip_type')->options(['ipv4'=>'IPV4','ipv6'=>'IPV6'])->required()->default('ipv6');
+            $form->select('ip_type')->options(['ipv4' => 'IPV4', 'ipv6' => 'IPV6'])->required()->default('ipv6');
             $form->switch('generated')->default(true);
             $form->text('type')->default('common')->required();
 
@@ -88,6 +90,19 @@ class IPPoolController extends AdminController
             $form->display('updated_at');
 
             $form->saved(function (Form $form, $result) {
+                $ip = new IP($form->ip);
+                $ipType = strtolower($ip->version);
+                if ($ipType != $form->ip_type) {
+                    $form->response()->error('IP type mismatch');
+                    return;
+                } elseif ($ipType == 'ipv4' && $form->cidr > 32) {
+                    $form->response()->error('IPv4 CIDR must be less than 32');
+                    return;
+                } elseif ($ipType == 'ipv6' && $form->cidr > 128) {
+                    $form->response()->error('IPv6 CIDR must be less than 128');
+                    return;
+                }
+
                 CreateIPAllocation::dispatch(\App\Models\IPPool::find($result));
             });
         });

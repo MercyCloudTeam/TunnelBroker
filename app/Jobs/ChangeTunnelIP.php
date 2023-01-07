@@ -42,8 +42,8 @@ class ChangeTunnelIP implements ShouldQueue
     {
         $ssh = NodeController::connect($this->tunnel->node);
         $result[] = $ssh->exec((new TunnelController())->changeTunnelCommand($this->tunnel));//执行创建Tunnel命令
-        \Log::info('exec result',$result);
-        $this->tunnel->update(['status'=>1]);
+        \Log::info('exec result', $result);
+        $this->tunnel->update(['status' => 1]);
     }
 
 }

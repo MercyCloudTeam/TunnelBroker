@@ -24,7 +24,7 @@ class Kernel extends ConsoleKernel
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @param \Illuminate\Console\Scheduling\Schedule $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
@@ -37,11 +37,11 @@ class Kernel extends ConsoleKernel
         $schedule->job(new BGPCheck())->everyTenMinutes();//BGP Status Check
 
         //每6小时将创建异常的服务状态改为等待创建（重试等待机制）
-        $schedule->call(function (){
-            Tunnel::where('status',4)->update(['status'=>2]);
+        $schedule->call(function () {
+            Tunnel::where('status', 4)->update(['status' => 2]);
         })->everySixHours();
         //更新Cloudflare的代理IP
-        $schedule->command('cloudflare:reload')->daily();
+//        $schedule->command('cloudflare:reload')->daily();
     }
 
     /**
@@ -51,7 +51,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

@@ -45,4 +45,3 @@ Route::middleware([
     Route::get('/validate/asn',[ASNController::class,'index'])->name('bgp.validate');//验证ASN
     Route::post('/validate/asn',[ASNController::class,'store']);
 });
-

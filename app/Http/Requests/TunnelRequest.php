@@ -34,6 +34,8 @@ class TunnelRequest extends FormRequest
             'remote'=>['required','ip',new TunnelIP($this->get('mode'),$this->get('node'))],
             'dstport'=>'nullable|integer|max:65535|min:1024',//VXLAN 用户的可选配置
             'asn'=>'nullable|exists:asn,id',//VXLAN 用户的可选配置
+            'port'=>'nullable|integer|max:65535|min:1024',
+            'pubkey'=>['nullable','string','regex:/^[A-Za-z0-9+\/=]{42}[A|E|I|M|Q|U|Y|c|g|k|o|s|w|4|8|0]=$/'],
         ];
     }
 

@@ -89,7 +89,7 @@ Admin::menu(function (Menu $menu) {
             'title'         => 'BGP Filter',
             'icon'          => 'fa-fire',
             'uri'           => '/bgp/filter',
-            'parent_id'     => 0,
+            'parent_id'     => 600,
         ],
         [
             'id'            => 700,

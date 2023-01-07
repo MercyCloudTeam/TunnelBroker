@@ -16,15 +16,15 @@ class CreateNodesTables extends Migration
         Schema::create('nodes', function (Blueprint $table) {
             $table->id();
             $table->ipAddress('ip');
-            $table->string('username')->default('root');
+            $table->string('username');
             $table->string('title');
-            $table->string('county',3)->nullable();
+            $table->string('county', 3)->nullable();
             $table->string('password')->nullable();
-            $table->string('login_type')->default('password');//密钥登录还是密码登录
-            $table->string('port')->default(22);
+            $table->string('login_type');//密钥登录还是密码登录
+            $table->string('port');
             $table->string('status')->default(1);
-            $table->integer('limit')->default(-1);
-            $table->boolean('public')->default(true);//公开？
+            $table->integer('limit');
+            $table->boolean('public')->default(true);
             $table->json('config')->nullable();
             $table->timestamps();
 
@@ -39,9 +39,9 @@ class CreateNodesTables extends Migration
         //已经分配的IP
         Schema::create('ip_allocation', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('tunnel_id')->nullable();
-            $table->bigInteger('ip_pool_id');
-            $table->bigInteger('node_id');
+            $table->foreignId('tunnel_id')->nullable();
+            $table->foreignId('ip_pool_id');
+            $table->foreignId('node_id');
             $table->ipAddress('ip');
             $table->integer('cidr');//这个网段的子网網掩
             $table->string('type');//v4 v6
@@ -51,7 +51,7 @@ class CreateNodesTables extends Migration
         //IP池设计来自MercyCloud自动化服务 简化而来
         Schema::create('ip_pool', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('node_id');
+            $table->foreignId('node_id');
             $table->ipAddress('ip')->unique();
             $table->integer('cidr');//这个网段的子网網掩
             $table->integer('allocation_size')->nullable();//分配的子网
