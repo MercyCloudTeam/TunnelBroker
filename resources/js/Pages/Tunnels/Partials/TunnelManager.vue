@@ -26,6 +26,7 @@ const createTunnel = () => {
         preserveScroll: true,
         errorBag: 'createTunnel',
         onSuccess: () => {
+            createTunnelForm.reset('remote', 'mode', 'node','pubkey','port');
             displayingToken.value = true;
             createTunnelForm.reset();
         },
@@ -52,8 +53,14 @@ const modeChange = () => {
     console.log(createTunnelForm.mode);
     switch (createTunnelForm.mode){
         case 'wireguard':
+            createTunnelForm.port = null;
             displayPortInput.value = true;
             displayPubKeyInput.value  = true;
+            break
+        case 'vxlan':
+            createTunnelForm.port = 4789;
+            displayPortInput.value = true;
+            displayPubKeyInput.value  = false;
             break
         default:
             displayPortInput.value = false;
@@ -94,7 +101,7 @@ const modeChange = () => {
             <div class="col-span-6" v-if="displayPubKeyInput">
                 <InputLabel for="pubkey" value="Pubkey" />
                 <TextInput
-                    id="remote"
+                    id="pubkey"
                     v-model.trim="createTunnelForm.pubkey"
                     type="text"
                     class="mt-1 block w-full"
@@ -107,7 +114,7 @@ const modeChange = () => {
             <div class="col-span-6" v-if="displayPortInput">
                 <InputLabel for="port" value="Port" />
                 <TextInput
-                    id="remote"
+                    id="port"
                     v-model.number="createTunnelForm.port"
                     type="text"
                     class="mt-1 block w-full"
@@ -146,6 +153,9 @@ const modeChange = () => {
         <template #actions>
             <ActionMessage :on="createTunnelForm.recentlySuccessful" class="mr-3">
                 Created.
+            </ActionMessage>
+            <ActionMessage v-if="createTunnelForm.hasErrors">
+                {{ createTunnelForm.errors.toString()}}
             </ActionMessage>
 
             <PrimaryButton :class="{ 'opacity-25': createTunnelForm.processing }" :disabled="createTunnelForm.processing">

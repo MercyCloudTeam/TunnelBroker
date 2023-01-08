@@ -20,3 +20,9 @@ Route::middleware(['auth:sanctum'])->group(function (){
     Route::apiResource('/tunnel','TunnelAPIController');
     Route::post('/ddns-tunnel/{tunnel}',[TunnelAPIController::class,'tunnelDDNSUpdate']);//动态IP用户 请求本接口即可实现对Remote IP的更新
 });
+
+
+Route::prefix('/result')->group(function (){
+    Route::post('/tunnel/{tunnel}',[TunnelAPIController::class,'tunnelResult']);
+//    Route::get('/tunnel/{tunnel}',[TunnelAPIController::class,'tunnelResult']);//获取隧道创建结果
+});

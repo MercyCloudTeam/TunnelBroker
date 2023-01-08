@@ -19,6 +19,8 @@ return new class extends Migration {
             $table->json('data');
             $table->string('description');
             $table->bigInteger('limit');
+            $table->integer('ipv6_num');
+            $table->integer('ipv4_num');
             $table->bigInteger('bandwidth');
             $table->timestamps();
         });

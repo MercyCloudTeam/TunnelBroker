@@ -1,4 +1,4 @@
-<p align="center"><a href="https://mercycloud.com" target="_blank"><img src="https://console.mercycloud.com/assets/images/logo/logo.png" width="150"></a></p>
+<p align="center"><a href="https://ngunion.com" target="_blank"><img src="http://ngunion.com/assets/img/logow.png" width="150"></a></p>
 
 <p align="center">
 
@@ -8,46 +8,47 @@
 
 使用Laravel框架及生态开发出来的Tunnel Broker（隧道中间人）面板
 
-IPV6 Tunnel 使您能够通过只有IPv4连接并支持IPv6的主机或路由器建立隧道，实现访问IPv6 Internet。
-
-
-
-> 本项目部分代码来自MercyCloud Automation自动化服务及Core核心服务
+> IPV6 Tunnel 使您能够通过只有IPv4连接并支持IPv6的主机或路由器建立隧道，实现访问IPv6 Internet。
 
 ### 支持隧道
 
-SIT 隧道（IPV6隧道）
+* sit(6in4) 
+* wireguard 
+* gre
+* ipip
+* vxlan
 
-BGP 隧道
+### 运行原理
 
+> 本项目并不需要任何Agent程序，节点无需安装配置，仅限将该仓库代码部署至网站服务器即可使用(服务器上需安装基础软件FRRouting)。
 
+网站服务器通过SSH远程到节点服务器执行命令
 
-> 开发之初做了IPIP GRE等隧道的支持，因为功能未测试完成所以针对其他隧道做了前端方面的屏蔽
+### 节点依赖软件包
+
+* iproute2
+* frrouting
+* wireguard
 
 ## 功能
 
 * 用户系统（基础的用户系统 【注册、登录、个人中心】，不包含工单等功能）
 * 自动化配置Tunnel
-* API 支持（包含DDNS API）
-* 自动化隧道配置
 * FRRouting路由器 BGP自动化配置
 * AS-SET自动更新（基于RIPE NCC RESTful API）
 * ASN自动验证（仅限注册邮箱为ASN维护者邮箱时）
 
-## 官方站
+## 案例
 
 TunnelBroker.io
 
-
-
-TunnelBrokerIO是一个公益项目，由赞助商提供资源支持，MercyCloud负责维护及技术支持。
-
-> 与MercyCloud账户不通用
+TunnelBrokerIO是一个公益项目，由赞助商提供资源支持，[NGUnion](https://ngunion.com)负责维护及技术支持。
 
 ## 赞助商
 
-[OLVPS](https://olvps.com/cart.php)(AS59598)
-
+* [OLVPS](https://olvps.com/cart.php)(AS59598)
+* [MercyCloud](https://www.mercycloud.com/)(AS9886)
+* [Sakura Network]
 
 
 
@@ -64,17 +65,11 @@ TunnelBrokerIO是一个公益项目，由赞助商提供资源支持，MercyClou
 
 ## 安装（自托管部署）
 
-Docker部署
-
-施工中~ 文档编写中
-
-
+Docker部署(laravel sail)
 
 基础部署
 
-请参考：https://learnku.com/docs/laravel/8.x/deployment/9359
-
-
+请参考：https://learnku.com/docs/laravel/9.x/deployment/9359
 
 配置项
 
@@ -109,15 +104,12 @@ ZONE_NAME=tunnel.mercycloud.com.
 
 ```
 
-> 本项目并不需要任何Agent程序，节点无需安装配置，仅限将该仓库代码部署至网站服务器即可使用。
-
 ## 感谢
 
 * Dcat Admin
 * Laravel Framework
 * Laravel Jetstream
 * Laravel Telescope
-* l5-swagger
 * phpseclib
 
 ## 联系
@@ -127,12 +119,6 @@ ZONE_NAME=tunnel.mercycloud.com.
 NOC:  noc@mercycloud.com （网络问题）
 
 > 这是一个开源项目，咱们回复时效可能会较长，请不要频繁发件催促及垃圾邮件。这些邮箱对咱们日常运营非常重要、Thanks
-
-## API文档
-
-http://项目地址/api/documentation
-
-施工中
 
 ## 许可证 License
 

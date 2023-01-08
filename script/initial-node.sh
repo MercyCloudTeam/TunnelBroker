@@ -1,5 +1,17 @@
 # bin/sh
 
+apt install -y net-tools iputils-ping iproute2 sudo
+
+useradd -m -s /bin/bash tunnelbroker
+passwd tunnelbroker
+usermod -aG frr,frrvty tunnelbroker
+echo "
+tunnelbroker ALL=NOPASSWD: /sbin/ip
+tunnelbroker ALL=NOPASSWD: /sbin/ifconfig
+tunnelbroker ALL=NOPASSWD: /sbin/route
+tunnelbroker ALL=NOPASSWD: /usr/bin/wg
+tunnelbroker ALL=NOPASSWD: /usr/bin/wg-quick
+" > /etc/sudoers.d/tunnelbroker
 
 
 
@@ -18,3 +30,4 @@ service frr restart
 # Wireguard
 mkdir /tunnelbroker-wireguard
 apt install -y wireguard
+

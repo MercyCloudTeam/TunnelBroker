@@ -32,7 +32,8 @@ class TunnelController extends Controller
         'ipip',
         'ip6gre',
         'ip6ip6',
-        'wireguard'
+        'wireguard',
+        'vxlan'
     ];
 
     /**
@@ -201,7 +202,7 @@ class TunnelController extends Controller
                 ]);
             }
         }
-        if ($user->tunnels->count() > 5) {
+        if ($user->tunnels->count() > env('DEFAULT_USER_LIMIT')) {
             return throw ValidationException::withMessages([
                 'tunnel' => ["You've created too many Tunnels"],
             ]);
@@ -241,7 +242,7 @@ class TunnelController extends Controller
      */
     public function deleteTunnelCommand(Tunnel $tunnel)
     {
-        return "ip link delete {$tunnel->interface}";
+        return "sudo ip link delete {$tunnel->interface}";
     }
 
     /**
@@ -281,10 +282,15 @@ class TunnelController extends Controller
             case "ipip":
             case "ip6gre":
             case "ip6ip6":
-                $ipShell = "ip tunnel $action mode $tunnel->mode name $tunnel->interface";
+            $ipShell = "sudo ip tunnel $action mode $tunnel->mode name $tunnel->interface";
                 switch ($action) {
                     case 'add':
-                        $ipShell .= " remote $tunnel->remote local $tunnel->local";
+                        if ($tunnel->mode == "ip6gre" || $tunnel->mode == "ip6ip6") {
+                            $local = $tunnel->local6;
+                        } else {
+                            $local = $tunnel->local;
+                        }
+                        $ipShell .= " remote $tunnel->remote local $local";
                         empty($tunnel->ttl) ?: $ipShell .= " ttl $tunnel->ttl ";
                         empty($tunnel->dstport) ?: $ipShell .= " dstport $tunnel->dstport ";
                         break;
@@ -293,12 +299,19 @@ class TunnelController extends Controller
                 }
                 $command[] = $ipShell;
                 break;
+
             case "vxlan":
-                $command[] = "ip link $action $tunnel->interface type $tunnel->mode ";
+                switch ($action) {
+                    case 'add':
+                        $id = $tunnel->srcport;//SrcPort作为VXLAN的ID
+                        $ipShell = "sudo ip link add dev $tunnel->interface type vxlan id $id dstport $tunnel->dstport local $tunnel->local remote $tunnel->remote";
+                        break;
+                    case 'change':
+                        $ipShell = "sudo ip link set $tunnel->interface remote $tunnel->remote dstport $tunnel->dstport";
+                }
+                $command[] = $ipShell;
                 break;
             case 'wireguard':
-                $privateKey = "/tunnelbroker-wireguard/$tunnel->interface.private";
-                $pub = "/tunnelbroker-wireguard/$tunnel->interface-pub";
                 $remotePubKey = $tunnel->config['remote']['pubkey'];
 
                 if (!empty($tunnel->ip4)){
@@ -309,12 +322,20 @@ class TunnelController extends Controller
                 }
                 $allowedIP = implode(',', $allowedIP);
 
-                $command[] = "ip link add dev $tunnel->interface type wireguard" ;
-//                $command[] = "umask 077";
-                $command[] = "wg genkey > $privateKey";
-                $command[] = "wg pubkey < $privateKey > $pub";
-                $command[] = "wg set $tunnel->interface listen-port $tunnel->srcport private-key $privateKey peer $remotePubKey allowed-ips $allowedIP endpoint $tunnel->remote:$tunnel->dstport" ;
-                //persistent-keepalive 25
+                switch ($action){
+                    case 'add':
+                        $privateKey = "/home/tunnelbroker/wireguard-key/$tunnel->interface.private";
+                        $pub = "/home/tunnelbroker/wireguard-key/$tunnel->interface-pub";
+                        $command[] = "sudo ip link add dev $tunnel->interface type wireguard" ;
+                        $command[] = "umask 077";
+                        $command[] = "sudo wg genkey > $privateKey";
+                        $command[] = "sudo wg pubkey < $privateKey > $pub";
+                        $command[] = "sudo wg set $tunnel->interface listen-port $tunnel->srcport private-key $privateKey peer $remotePubKey allowed-ips $allowedIP endpoint $tunnel->remote:$tunnel->dstport" ;
+                        break;
+                    case 'change':
+                        $command[] = "sudo wg set $tunnel->interface listen-port $tunnel->srcport peer $remotePubKey allowed-ips $allowedIP endpoint $tunnel->remote:$tunnel->dstport" ;
+                        break;
+                }
                 break;
             default:
                 return null;
@@ -324,11 +345,24 @@ class TunnelController extends Controller
         return $command;
     }
 
+
+//    public function assignVxlanId(Tunnel $tunnel)
+//    {
+//        $tunnels = Tunnel::where([
+//            'mode' => 'vxlan',
+//            'node_id' => $tunnel->node_id,
+//        ])->pluck('config');
+//        $existsIds = [];
+//        foreach ($tunnels as $tunnel) {
+//            $existsIds[] = $tunnel->config['id'];
+//        }
+//        //按照协议规定，VXLAN ID的范围是1-16777215
+//    }
+
     public function assignPort(Tunnel $tunnel)
     {
         $ports = Tunnel::where([
             ['node_id', $tunnel->node_id],
-            ['mode', $tunnel->mode],
         ])->pluck('srcport')->toArray();
         $range = range(10000,65535);
         $available = array_diff($range, $ports);
@@ -441,5 +475,6 @@ class TunnelController extends Controller
         DB::commit();
         //v6默认使用 ::2  v4则按CIDR大小使用第一个IP
     }
+
 
 }

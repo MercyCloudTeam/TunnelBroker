@@ -23,6 +23,11 @@ class CreateTunnel implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+
+    public SSH2 $connect;
+
+    public int $connectNode;
+
     /**
      * Create a new job instance.
      *
@@ -48,7 +53,6 @@ class CreateTunnel implements ShouldQueue
     {
 
         $command = (new TunnelController())->createTunnelCommand($tunnel);
-
         if (is_array($command)){
             foreach ($command as $cmd){
                 $result[] = $ssh->exec($cmd);
@@ -56,19 +60,19 @@ class CreateTunnel implements ShouldQueue
         }elseif(is_string($command)){
             $result[] = $ssh->exec($command);
         }
-        $result[] = $ssh->exec("ip link set dev {$tunnel->interface} up");//启动Tunnel
+        $result[] = $ssh->exec("sudo ip link set dev {$tunnel->interface} up");//启动Tunnel
         //给网口添加地址
         if (isset($tunnel->ip4) && isset($tunnel->ip6)) {
             $ip6 = (string)Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next();
             $ip4 = (string)Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
-            $result[] = $ssh->exec("ip addr add {$ip6}/{$tunnel->ip6_cidr} dev {$tunnel->interface}");
-            $result[] = $ssh->exec("ip addr add {$ip4}/{$tunnel->ip4_cidr} dev {$tunnel->interface}");
+            $result[] = $ssh->exec("sudo ip addr add {$ip6}/{$tunnel->ip6_cidr} dev {$tunnel->interface}");
+            $result[] = $ssh->exec("sudo ip addr add {$ip4}/{$tunnel->ip4_cidr} dev {$tunnel->interface}");
         } elseif (isset($tunnel->ip6)) {
             $ip6 = (string)Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next();
-            $result[] = $ssh->exec("ip addr add {$ip6}/{$tunnel->ip6_cidr} dev {$tunnel->interface}");
+            $result[] = $ssh->exec("sudo ip addr add {$ip6}/{$tunnel->ip6_cidr} dev {$tunnel->interface}");
         } elseif (isset($tunnel->ip4)) {
             $ip4 = (string)Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
-            $result[] = $ssh->exec("ip addr add {$ip4}/{$tunnel->ip4_cidr} dev {$tunnel->interface}");
+            $result[] = $ssh->exec("sudo ip addr add {$ip4}/{$tunnel->ip4_cidr} dev {$tunnel->interface}");
         }
         if (!empty($tunnel->asn_id)) {//当需要配置BGP Tunnels
             $bgpResult = $ssh->exec((new FRRController())->createBGP($tunnel));//执行创建Tunnel命令
@@ -80,11 +84,10 @@ class CreateTunnel implements ShouldQueue
         Log::debug("Create Tunnel Result", $result);
         foreach ($result as $item) {
             if (!empty($item)) {
-                \Log::info('Tunnel creation return exception', [$item, $tunnel->toArray(), $command]);
-                $tunnel->update(['status' => 6]);
+                Log::info("Tunnel($tunnel->id) creation return", [$item,$command]);
+//                $tunnel->update(['status' => 6]);
             }
         }
-
         //执行完成
         $tunnel->update(['status' => 1]);
     }
@@ -119,7 +122,11 @@ class CreateTunnel implements ShouldQueue
                     }
                     $tunnel->refresh();//重新加载模型
                     //TODO 优化 复用链接
+
+//                    if (!empty($this->connect))
+
                     $ssh = NodeController::connect($tunnel->node);
+
                     $this->create($ssh, $tunnel);
                 }
             }
