@@ -66,11 +66,17 @@ class TunnelIP implements Rule
             default:
                 return false;
         }
+
         if (!Tunnel::where([
             ['remote','=',$value],
             ['node_id','=',(int) $this->node_id]
         ])->get()->isEmpty()){
             return false;//同一节点只能有一个
+        }
+
+        $node =  Node::find($this->node_id);
+        if ($value === $node->ip || $value === $node->ip6){
+            return false;//不能是本节点IP
         }
 
         return true;

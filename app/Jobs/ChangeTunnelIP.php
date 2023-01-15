@@ -16,19 +16,23 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use IPTools\Network;
 use Log;
+use phpseclib3\Net\SSH2;
 
 class ChangeTunnelIP implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tunnel;
+    public Tunnel $tunnel;
+    public SSH2 $connect;
 
     /**
      * Create a new job instance.
      *
      */
-    public function __construct()
+    public function __construct(Tunnel $tunnel, SSH2 $connect)
     {
+        $this->tunnel = $tunnel;
+        $this->connect = $connect;
     }
 
     /**
@@ -39,27 +43,20 @@ class ChangeTunnelIP implements ShouldQueue
      */
     public function handle()
     {
-
-        Tunnel::where([
-            ['status', '=', 5],
-        ])->chunk(50, function ($tunnels) {
-            foreach ($tunnels as $tunnel) {
-                $ssh = NodeController::connect($tunnel->node);
-                $command = $ssh->exec((new TunnelController())->changeTunnelCommand($this->tunnel));
-                if (is_array($command)){
-                    foreach ($command as $cmd){
-                        $result[] = $ssh->exec($cmd);
-                    }
-                }elseif(is_string($command)){
-                    $result[] = $ssh->exec($command);
+        if ($this->tunnel->status == 5){
+            $result = [];
+            $command =$this->connect->exec((new TunnelController())->changeTunnelCommand($this->tunnel));
+            if (is_array($command)) {
+                foreach ($command as $cmd) {
+                    $result[] = $this->connect->exec($cmd);
                 }
-                Log::debug('Exec result', $result);
-
+            } elseif (is_string($command)) {
+                $result[] = $this->connect->exec($command);
             }
-        });
-        $ssh = NodeController::connect($this->tunnel->node);
-        $result[] = $ssh->exec((new TunnelController())->changeTunnelCommand($this->tunnel));//执行创建Tunnel命令
-        $this->tunnel->update(['status' => 1]);
+
+            Log::debug('ChangeTunnelIp Exec result', [$result, $command]);
+            $this->tunnel->update(['status' => 1]);
+        }
     }
 
 }

@@ -59,8 +59,25 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function tunnels()
     {
         return $this->hasMany(Tunnel::class);
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough
+     */
+    public function plan()
+    {
+        return $this->hasOneThrough(Plan::class, UserPlan::class, 'user_id', 'id', 'id', 'plan_id');
+    }
+
+    public function userPlan()
+    {
+        return $this->hasOne(UserPlan::class, 'user_id', 'id');
+    }
+
 }

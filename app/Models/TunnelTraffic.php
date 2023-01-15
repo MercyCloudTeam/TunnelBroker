@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TunnelBandwidth extends Model
+class TunnelTraffic extends Model
 {
     use HasFactory;
 
-    protected $table = 'tunnel_bandwidth';
+    protected $table = 'tunnel_traffic';
 
     protected $fillable = [
         'tunnel_id','in','out'

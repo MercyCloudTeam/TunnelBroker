@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tunnel_bandwidth', function (Blueprint $table) {
+        Schema::create('tunnel_traffic', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tunnel_id');
             $table->bigInteger('in')->default(0);//入网流量
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tunnel_bandwidth');
+        Schema::dropIfExists('tunnel_traffic');
     }
 };

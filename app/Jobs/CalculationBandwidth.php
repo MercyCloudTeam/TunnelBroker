@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Http\Controllers\NodeController;
 use App\Models\Node;
 use App\Models\Tunnel;
+use App\Models\TunnelTraffic;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -107,6 +108,29 @@ class CalculationBandwidth implements ShouldQueue
 //        if (Carbon::now())
     }
 
+    public function getTunnelBandwidth(Tunnel $tunnel)
+    {
+
+        $resetDay = $tunnel->user->userPlan->reset_day;
+        $tunnelBandwidth = TunnelTraffic::where([
+           'tunnel_id' => $tunnel->id,
+        ])->latest()->first();
+        if (empty($tunnelBandwidth)) {
+            //Initial Tunnel
+
+
+            return TunnelTraffic::create([
+               'tunnel_id' => $tunnel->id,
+                'in' => 0,
+                'out'=> 0,
+            ]);
+        }else{
+            if ($tunnelBandwidth->created_at->addMonth()->gt(Carbon::now())) {
+                //如果当前时间大于上次记录时间加一个月则代表是新的月份
+            }
+        }
+    }
+
 
     public function pregBandwidth(Tunnel $tunnel, $netDevFile)
     {
@@ -122,12 +146,15 @@ class CalculationBandwidth implements ShouldQueue
 //            入网流量
             $in = $this->cacheBandwidth("{$tunnel->interface}-in", $thisre, $tunnel->in);
             $out = $this->cacheBandwidth("{$tunnel->interface}-out", $thistr, $tunnel->out);
+//            $dbBandwidth = $tunnel-
+            $dbIn = $tunnel->bandwidth->in;
             if ($in !== $tunnel->in || $out !== $tunnel->out) { //发生改变才更新
 //            todo 20230106 Table Change
-                $tunnel->update([
-                    'in' => $in,
-                    'out' => $out
-                ]);
+
+//                $tunnel->update([
+//                    'in' => $in,
+//                    'out' => $out
+//                ]);
             }
         }
     }

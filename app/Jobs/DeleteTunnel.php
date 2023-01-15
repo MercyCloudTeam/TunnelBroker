@@ -17,21 +17,24 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use IPTools\Network;
 use Log;
+use phpseclib3\Net\SSH2;
 
 class DeleteTunnel implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tunnel;
+    public Tunnel $tunnel;
+    public SSH2 $connect;
 
     /**
      * Create a new job instance.
      *
      * @param Tunnel $tunnel
      */
-    public function __construct(Tunnel $tunnel)
+    public function __construct(Tunnel $tunnel, SSH2 $connect)
     {
         $this->tunnel = $tunnel;
+        $this->connect = $connect;
     }
 
     /**
@@ -42,13 +45,15 @@ class DeleteTunnel implements ShouldQueue
      */
     public function handle()
     {
-        $ssh = NodeController::connect($this->tunnel->node);
-        $result[] = $ssh->exec((new TunnelController())->deleteTunnelCommand($this->tunnel));//执行创建Tunnel命令
-        if (!empty($this->tunnel->asn_id)) {//清理BGP配置
-            $result[] = $ssh->exec((new FRRController())->deleteBGP($this->tunnel));
+        if ($this->tunnel->status == 7){
+            $result[] = $this->connect->exec((new TunnelController())->deleteTunnelCommand($this->tunnel));//执行创建Tunnel命令
+            if (!empty($this->tunnel->asn_id)) {//清理BGP配置
+                $result[] = $this->connect->exec((new FRRController())->deleteBGP($this->tunnel));
+            }
+            Log::info('exec result', $result);
+            $this->tunnel->delete();
         }
-        Log::info('exec result', $result);
-        $this->tunnel->update(['status' => 1]);
+
     }
 
 }

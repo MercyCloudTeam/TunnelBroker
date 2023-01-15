@@ -26,6 +26,7 @@ use Log;
 class TunnelController extends Controller
 {
 
+    //TODO 动态生成
     public static array $availableModes = [
         'sit',
         'gre',
@@ -86,10 +87,9 @@ class TunnelController extends Controller
                 'status' => 5
             ]);
             $tunnel->refresh();//重新加载模型
-            ChangeTunnelIP::dispatch($tunnel);//重载tunnel
             return $status;
         }
-        return "ERROR";
+        return false;
 
     }
 
@@ -104,11 +104,11 @@ class TunnelController extends Controller
     public function update(Request $request, Tunnel $tunnel)
     {
         $status = $this->updateAction($request, $tunnel);
-        if (is_string($status)) {
-            return Redirect::back()->with('success', config('status.code' . $status));
-        } else {
-            return Redirect::route('tunnels.index')->with('success', '修改成功');
+        if (!$status) {
+            return Redirect::back()->with('error', '更新失败');
         }
+        return Redirect::route('tunnels.index')->with('success', '修改成功');
+
     }
 
     /**
@@ -147,8 +147,6 @@ class TunnelController extends Controller
             'availableMode' => self::$availableModes,
             'asn' => $asn,
             'nodes' => $node,
-            //默认显示参数
-            // TODO 优化获取默认参数
         ]);
     }
 
@@ -162,9 +160,12 @@ class TunnelController extends Controller
     {
         $this->authorize('delete', $tunnel);
         //清理IP分配
-        DeleteTunnel::dispatch($tunnel);
+
         IPAllocation::where('tunnel_id', $tunnel->id)->update(['tunnel_id' => null]);//IP重新进入分配表
-        $tunnel->delete();
+
+        $tunnel->update(['status' => 7]);
+//        DeleteTunnel::dispatch($tunnel);
+//        $tunnel->delete();
         return Redirect::back()->with('success', "Tunnel删除中");
     }
 

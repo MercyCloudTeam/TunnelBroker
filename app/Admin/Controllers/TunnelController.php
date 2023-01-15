@@ -23,32 +23,31 @@ class TunnelController extends AdminController
      */
     protected function grid()
     {
-        return Grid::make(new Tunnel(), function (Grid $grid) {
+        return Grid::make(new Tunnel(['node']), function (Grid $grid) {
             $grid->column('id')->sortable();
             $grid->column('mode');
             $grid->column('local');
             $grid->column('remote');
-            $grid->column('ip4');
-            $grid->column('ip4_cidr');
-            $grid->column('ip6');
-            $grid->column('ip6_cidr');
-            $grid->column('key');
-            $grid->column('ttl');
-            $grid->column('vlan');
+            $grid->column('ip4')->display(function ($ip4) {
+                return $ip4.$this->ip4_cidr;
+            });
+            $grid->column('ip6')->display(function ($ip4) {
+                return $ip4.$this->ip6_cidr;
+            });;
             $grid->column('status');
-            $grid->column('mac');
+            $grid->column('node.title');
             $grid->column('interface');
             $grid->column('srcport');
             $grid->column('dstport');
-            $grid->column('in')->display(function ($v){
-                return \App\Http\Controllers\TunnelController::hbw($v);
-            });
-            $grid->column('out')->display(function ($v){
-                return \App\Http\Controllers\TunnelController::hbw($v);
-            });
-            $grid->column('config');
-            $grid->column('user_id');
-            $grid->column('node_id');
+//            $grid->column('in')->display(function ($v){
+//                return \App\Http\Controllers\TunnelController::hbw($v);
+//            });
+//            $grid->column('out')->display(function ($v){
+//                return \App\Http\Controllers\TunnelController::hbw($v);
+//            });
+//            $grid->column('config');
+//            $grid->column('user_id');
+//            $grid->column('node_id');
             $grid->column('created_at');
             $grid->column('updated_at')->sortable();
 

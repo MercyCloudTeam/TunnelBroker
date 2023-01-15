@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  * 4 - Create Error(Waiting Retry)
  * 5 - IP Changed
  * 6 - Error
- *
+ * 7 - Waiting Delete
  * @OA\Schema()
  */
 class Tunnel extends Model

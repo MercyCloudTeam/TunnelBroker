@@ -29,7 +29,7 @@ class TunnelRequest extends FormRequest
         $mode = implode(',',TunnelController::$availableModes);
 
         return [
-            'mode'=>['required',"in:{$mode}"],
+            'mode'=>['required',"in:$mode"],
             'node'=>'required|exists:nodes,id',
             'remote'=>['required','ip',new TunnelIP($this->get('mode'),$this->get('node'))],
             'dstport'=>'nullable|integer|max:65535|min:1024',//VXLAN 用户的可选配置

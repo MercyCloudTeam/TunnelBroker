@@ -24,18 +24,18 @@ class CreateTunnel implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
 
+    public Tunnel $tunnel;
     public SSH2 $connect;
-
-    public int $connectNode;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(Tunnel $tunnel, SSH2 $connect)
     {
-        //
+        $this->tunnel = $tunnel;
+        $this->connect = $connect;
     }
 
     public function fail($exception = null)
@@ -100,47 +100,31 @@ class CreateTunnel implements ShouldQueue
      */
     public function handle()
     {
-        Tunnel::where([
-            ['status', '=', 2],
-        ])->chunk(50, function ($tunnels) {
-            //创建IP规则，从IP池中生成，当tunnel被删除则清空分配的id，但是已经创建的分配记录不会被删除，优先使用已被分配的、否则再通过IP池创建新记录
-            foreach ($tunnels as $tunnel) {
-                if (isset($tunnel->ip4) || isset($tunnel->ip6)) {
-                    //如果在等待创建期间已经分配了IP的话则删除重新分配
-                    IPAllocation::where('tunnel_id', $tunnel->id)->update(['tunnel_id' => null]);
-                    $tunnel->update([
-                        'ip4' => null,
-                        'ip6' => null,
-                    ]);
-                } else {
-                    try {
-                        (new TunnelController())->assignIP($tunnel);
-                    } catch (Throwable $e) {
-                        Log::error('Tunnel IP allocation failed', [$e->getMessage(), $tunnel->toArray()]);
-                        $tunnel->update(['status' => 4]);
-                        continue;
-                    }
-                    $tunnel->refresh();//重新加载模型
-                    //TODO 优化 复用链接
-
-//                    if (!empty($this->connect))
-
-                    $ssh = NodeController::connect($tunnel->node);
-
-                    $this->create($ssh, $tunnel);
+        if ($this->tunnel->status == 2){
+            if (isset($this->tunnel->ip4) || isset($this->tunnel->ip6)) {
+                //如果在等待创建期间已经分配了IP的话则删除重新分配
+                IPAllocation::where('tunnel_id', $this->tunnel->id)->update(['tunnel_id' => null]);
+                $this->tunnel->update([
+                    'ip4' => null,
+                    'ip6' => null,
+                ]);
+            } else {
+                try {
+                    (new TunnelController())->assignIP($this->tunnel);
+                } catch (Throwable $e) {
+                    Log::error('Tunnel IP allocation failed', [$e->getMessage(), $this->tunnel->toArray()]);
+                    $this->tunnel->update(['status' => 4]);
+                    return;
                 }
-            }
-        });
+                $this->tunnel->refresh();//重新加载模型
+                $this->create($this->connect, $this->tunnel);
 
-        Tunnel::where([
-            ['status', '=', 6], //状态异常的再进行一次创建操作
-        ])->chunk(50, function ($tunnels) {
-            foreach ($tunnels as $tunnel) {
-                $ssh = NodeController::connect($tunnel->node);
-                $this->create($ssh, $tunnel);
             }
-        });
+        }
 
+        if ($this->tunnel->status == 6){
+            $this->create($this->connect, $this->tunnel);
+        }
 
     }
 

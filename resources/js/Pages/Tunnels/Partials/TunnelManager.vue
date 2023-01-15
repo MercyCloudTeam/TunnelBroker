@@ -38,6 +38,10 @@ const createTunnel = () => {
 
 const displayPortInput = ref(false);
 const displayPubKeyInput = ref(false);
+const displayIpAssignInput = ref({
+    'ip4': false,
+    'ip6': false
+});
 
 
 
@@ -56,19 +60,40 @@ const modeChange = () => {
             createTunnelForm.port = null;
             displayPortInput.value = true;
             displayPubKeyInput.value  = true;
+            displayIpAssignInput.value = {
+                'ip4': true,
+                'ip6': true
+            };
             break
         case 'vxlan':
             createTunnelForm.port = 4789;
             displayPortInput.value = true;
             displayPubKeyInput.value  = false;
+            displayIpAssignInput.value = {
+                'ip4': true,
+                'ip6': true
+            };
             break
+        case 'gre':
+        case 'ip6gre':
+        case 'sit':
+            displayPortInput.value = false;
+            displayPubKeyInput.value  = false;
+            displayIpAssignInput.value = {
+                'ip4': true,
+                'ip6': true
+            };
+            break;
         default:
             displayPortInput.value = false;
             displayPubKeyInput.value  = false;
+            displayIpAssignInput.value = {
+                'ip4': false,
+                'ip6': false
+            };
             break
     }
 }
-
 
 </script>
 
@@ -77,11 +102,11 @@ const modeChange = () => {
     <!-- Generate API Token -->
     <FormSection @submitted="createTunnel">
         <template #title>
-            Create API Token
+            Create Tunnel
         </template>
 
         <template #description>
-            API tokens allow third-party services to authenticate with our application on your behalf.
+            Please enter your server IP and information for creating the interface.
         </template>
 
         <template #form>

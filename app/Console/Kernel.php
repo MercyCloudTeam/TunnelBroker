@@ -7,6 +7,8 @@ use App\Jobs\CalculationBandwidth;
 use App\Jobs\ChangeTunnelIP;
 use App\Jobs\CreateTunnel;
 use App\Jobs\NodeStatusCheck;
+use App\Jobs\NodeUpdate;
+use App\Jobs\TunnelUpdate;
 use App\Models\Tunnel;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -31,11 +33,15 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        $schedule->job(new CreateTunnel())->everyMinute();//每分钟自动开始创建Tunnel
-//        $schedule->job(new ChangeTunnelIP())->everyMinute();//每分钟自动开始创建Tunnel
-        $schedule->job(new NodeStatusCheck())->everyFiveMinutes();//Every 5 minutes check node status
-        $schedule->job(new CalculationBandwidth())->everyFiveMinutes();//每5分钟获取一次流量（统计） & 获取不到的接口会归类为异常
-        $schedule->job(new BGPCheck())->everyTenMinutes();//BGP Status Check
+//        $schedule->job(new CreateTunnel())->everyMinute();//每分钟自动开始创建Tunnel
+//        $schedule->job(new ChangeTunnelIP())->everyMinute();
+//        $schedule->job(new NodeStatusCheck())->everyFiveMinutes();//Every 5 minutes check node status
+//        $schedule->job(new CalculationBandwidth())->everyFiveMinutes();//每5分钟获取一次流量（统计） & 获取不到的接口会归类为异常
+//        $schedule->job(new BGPCheck())->everyTenMinutes();//BGP Status Check
+
+        $schedule->job(new TunnelUpdate())->everyMinute();
+        $schedule->job(new NodeUpdate())->everyFiveMinutes();
+
 
         //每6小时将创建异常的服务状态改为等待创建（重试等待机制）
         $schedule->call(function () {

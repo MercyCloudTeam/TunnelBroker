@@ -2,7 +2,10 @@
 
 namespace App\Actions\Fortify;
 
+use App\Models\Plan;
 use App\Models\User;
+use DB;
+use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
@@ -15,7 +18,7 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * Validate and create a newly registered user.
      *
-     * @param  array  $input
+     * @param array $input
      * @return \App\Models\User
      */
     public function create(array $input)
@@ -27,10 +30,55 @@ class CreateNewUser implements CreatesNewUsers
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 
-        return User::create([
+        DB::beginTransaction();
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
         ]);
+
+        try {
+            $plan = $this->userPlan();
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        $user->userPlan()->create([
+            'plan_id' => $plan->id,
+            'expire_at' => now()->addYears(10),
+            'reset_time' => now()->addMonth(),
+        ]);
+
+        DB::commit();
+
+        return $user;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function userPlan()
+    {
+        $defaultPlanId = env('DEFAULT_PLAN_ID');
+        if (empty($defaultPlanId)) {
+            throw new Exception('Please set DEFAULT_PLAN_ID in .env file');
+        }
+        $defaultPlan = Plan::where('id', $defaultPlanId)->first();
+        if (empty($defaultPlan) && $defaultPlanId == 1) {
+            //Initial Default Plan
+            $defaultPlan = Plan::create([
+                'name' => 'Free',
+                'slug' => 'free',
+                'description' => 'Free Plan',
+                'ipv4_num' => env('INITIAL_PLAN_IPV4', 5),
+                'ipv6_num' => env('INITIAL_PLAN_IPV6', 5),
+                'limit' => env('INITIAL_PLAN_TRAFFIC', 1024000),
+                'traffic' => 1000,
+            ]);
+        } else {
+            throw new Exception('DEFAULT_PLAN_ID plan not found');
+        }
+        return $defaultPlan;
     }
 }
