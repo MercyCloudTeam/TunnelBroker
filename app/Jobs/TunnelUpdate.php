@@ -52,7 +52,7 @@ class TunnelUpdate implements ShouldQueue
      */
     public function handle()
     {
-        $tunnels = Tunnel::where([
+        Tunnel::where([
             ['status', '!=', 1],
         ])->orderBy('node_id', 'desc')->chunk(50, function ($tunnels) {
             foreach ($tunnels as $tunnel) {
