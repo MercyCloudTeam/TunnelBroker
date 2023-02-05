@@ -32,7 +32,7 @@ class RIPEController extends Controller
         return Http::withHeaders([
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
-        ])->put("{$this->url}/{$objectType}/{$key}?password={$password}",$params);
+        ])->put("$this->url/$objectType/$key?password=$password",$params);
     }
 
 

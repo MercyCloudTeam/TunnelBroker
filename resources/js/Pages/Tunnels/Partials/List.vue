@@ -20,12 +20,17 @@ defineProps({
 })
 
 
-
 const confirmTunnelDeletionModal = ref(false);
+const displayTunnelInfoModal = ref(false);
 
 const confirmTunnelDeletion = (tunnel) => {
     confirmTunnelDeletionModal.value = true;
     delTunnelForm.tunnel = tunnel;
+}
+
+const displayTunnelInfo = (tunnel) => {
+    displayTunnelInfoModal.value = true;
+    detailTunnel.tunnel = tunnel;
 }
 
 const deleteTunnel = () => {
@@ -45,7 +50,10 @@ const deleteTunnel = () => {
 
 const delTunnelForm = useForm({
     tunnel: null,
+})
 
+const detailTunnel = useForm({
+    tunnel: null,
 })
 
 </script>
@@ -53,7 +61,7 @@ const delTunnelForm = useForm({
 
 <template>
     <div v-if="tunnels.length > 0">
-        <SectionBorder />
+        <SectionBorder/>
         <!-- Manage API Tokens -->
         <div class="mt-10 sm:mt-0">
             <ActionSection>
@@ -75,16 +83,18 @@ const delTunnelForm = useForm({
                             <div class="text-right">
                                 {{ tunnel.remote }}
                             </div>
-                            <div  class="text-sm ext-gray-400">
-                                test
-                            </div>
                             <div class="flex items-center ml-2">
-                                <div  class="text-sm text-gray-400">
+                                <div class="text-sm text-gray-400">
                                     {{ tunnel.mode }}
                                 </div>
                             </div>
                             <div class="flex">
-                                <button class="cursor-pointer ml-6 text-sm text-red-500" @click="confirmTunnelDeletion(tunnel)">
+                                <button class="cursor-pointer ml-6 text-sm text-blue-500"
+                                        @click="displayTunnelInfo(tunnel)">
+                                    Detail
+                                </button>
+                                <button class="cursor-pointer ml-6 text-sm text-red-500"
+                                        @click="confirmTunnelDeletion(tunnel)">
                                     Delete
                                 </button>
                             </div>
@@ -110,6 +120,24 @@ const delTunnelForm = useForm({
                     Remove
                 </PrimaryButton>
                 <SecondaryButton @click="confirmTunnelDeletionModal = false">
+                    Close
+                </SecondaryButton>
+            </template>
+        </DialogModal>
+
+        <DialogModal :show="displayTunnelInfoModal" @close="displayTunnelInfoModal = false">
+            <template #title>
+                Tunnel #{{ detailTunnel.tunnel.id }}
+            </template>
+
+            <template #content>
+                <div>
+                    Are
+                </div>
+            </template>
+
+            <template #footer>
+                <SecondaryButton @click="displayTunnelInfoModal = false">
                     Close
                 </SecondaryButton>
             </template>

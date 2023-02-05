@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TelegramBotController;
 use App\Http\Controllers\TunnelAPIController;
 use App\Http\Controllers\TunnelController;
 use Illuminate\Http\Request;
@@ -25,4 +26,9 @@ Route::middleware(['auth:sanctum'])->group(function (){
 Route::prefix('/result')->group(function (){
     Route::post('/tunnel/{tunnel}',[TunnelAPIController::class,'tunnelResult']);
 //    Route::get('/tunnel/{tunnel}',[TunnelAPIController::class,'tunnelResult']);//获取隧道创建结果
+});
+
+
+Route::prefix('/telegram/bot')->group(function (){
+    Route::get('/test',[TelegramBotController::class,'test']);
 });

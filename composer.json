@@ -19,7 +19,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "inertiajs/inertia-laravel": "^0.6.3",
-        "irazasyed/telegram-bot-sdk": "^3.4",
+        "irazasyed/telegram-bot-sdk": "*",
         "laravel-lang/lang": "~8.0",
         "laravel/fortify": "^1.15",
         "laravel/framework": "^9.46",
@@ -30,7 +30,8 @@
         "phpseclib/phpseclib": "~3.0",
         "rlanvin/php-ip": "^3.0",
         "s1lentium/iptools": "^1.1",
-        "tightenco/ziggy": "^1.0"
+        "tightenco/ziggy": "^1.0",
+        "ext-sodium": "*"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.9",

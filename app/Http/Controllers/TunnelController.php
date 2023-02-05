@@ -209,10 +209,22 @@ class TunnelController extends Controller
             ]);
         }
 
-        switch ($request->mode){
+        switch ($request->mode) {
             case "wireguard":
+                try {
+                    $ed25519 = sodium_crypto_sign_keypair();
+                    $ed25519PubKey = sodium_crypto_sign_publickey($ed25519);
+                    $ed25519PrivKey = sodium_crypto_sign_secretkey($ed25519);
+                    $curve25519PubKey = sodium_crypto_sign_ed25519_pk_to_curve25519($ed25519PubKey);
+                    $curve25519PrivKey = sodium_crypto_sign_ed25519_sk_to_curve25519($ed25519PrivKey);
+                } catch (\Exception $e) {
+                    return throw ValidationException::withMessages([
+                        'tunnel' => ["WireGuard key generation failed"],
+                    ]);
+                }
                 $config = [
-                    'remote'=>['pubkey'=>$request->pubkey],
+                    'remote' => ['pubkey' => $request->pubkey],
+                    'local' => ['pubkey' => base64_encode($curve25519PubKey), 'privkey' => base64_encode($curve25519PrivKey)],
                 ];
                 break;
         }
@@ -283,7 +295,7 @@ class TunnelController extends Controller
             case "ipip":
             case "ip6gre":
             case "ip6ip6":
-            $ipShell = "sudo ip tunnel $action mode $tunnel->mode name $tunnel->interface";
+                $ipShell = "sudo ip tunnel $action mode $tunnel->mode name $tunnel->interface";
                 switch ($action) {
                     case 'add':
                         if ($tunnel->mode == "ip6gre" || $tunnel->mode == "ip6ip6") {
@@ -314,27 +326,29 @@ class TunnelController extends Controller
                 break;
             case 'wireguard':
                 $remotePubKey = $tunnel->config['remote']['pubkey'];
+                $localPubKey = $tunnel->config['local']['pubkey'];
+                $localPrivKey = $tunnel->config['local']['privkey'];
 
-                if (!empty($tunnel->ip4)){
+                if (!empty($tunnel->ip4)) {
                     $allowedIP[] = "$tunnel->ip4/$tunnel->ip4_cidr";
                 }
-                if (!empty($tunnel->ip6)){
+                if (!empty($tunnel->ip6)) {
                     $allowedIP[] = "$tunnel->ip6/$tunnel->ip6_cidr";
                 }
                 $allowedIP = implode(',', $allowedIP);
 
-                switch ($action){
+                switch ($action) {
                     case 'add':
-                        $privateKey = "/home/tunnelbroker/wireguard-key/$tunnel->interface.private";
-                        $pub = "/home/tunnelbroker/wireguard-key/$tunnel->interface-pub";
-                        $command[] = "sudo ip link add dev $tunnel->interface type wireguard" ;
+                        $privateKey = "/home/tunnelbroker/wireguard-key/$tunnel->interface.private.key";
+                        $pub = "/home/tunnelbroker/wireguard-key/$tunnel->interface.pub.key";
+                        $command[] = "sudo ip link add dev $tunnel->interface type wireguard";
                         $command[] = "umask 077";
-                        $command[] = "sudo wg genkey > $privateKey";
-                        $command[] = "sudo wg pubkey < $privateKey > $pub";
-                        $command[] = "sudo wg set $tunnel->interface listen-port $tunnel->srcport private-key $privateKey peer $remotePubKey allowed-ips $allowedIP endpoint $tunnel->remote:$tunnel->dstport" ;
+                        $command[] = "echo $localPubKey > $privateKey";
+                        $command[] = "echo $localPrivKey > $pub";
+                        $command[] = "sudo wg set $tunnel->interface listen-port $tunnel->srcport private-key $privateKey peer $remotePubKey allowed-ips $allowedIP endpoint $tunnel->remote:$tunnel->dstport";
                         break;
                     case 'change':
-                        $command[] = "sudo wg set $tunnel->interface listen-port $tunnel->srcport peer $remotePubKey allowed-ips $allowedIP endpoint $tunnel->remote:$tunnel->dstport" ;
+                        $command[] = "sudo wg set $tunnel->interface listen-port $tunnel->srcport peer $remotePubKey allowed-ips $allowedIP endpoint $tunnel->remote:$tunnel->dstport";
                         break;
                 }
                 break;
@@ -365,11 +379,11 @@ class TunnelController extends Controller
         $ports = Tunnel::where([
             ['node_id', $tunnel->node_id],
         ])->pluck('srcport')->toArray();
-        $range = range(10000,65535);
+        $range = range(10000, 65535);
         $available = array_diff($range, $ports);
         if (!empty($available)) {
             return array_shift($available);
-        }else{
+        } else {
             return false;
         }
     }
@@ -380,11 +394,11 @@ class TunnelController extends Controller
             ['node_id', $tunnel->node_id],
             ['mode', $tunnel->mode],
         ])->pluck('vlan')->toArray();
-        $range = range(100,4000);
+        $range = range(100, 4000);
         $available = array_diff($range, $vlan);
         if (!empty($available)) {
             return array_shift($available);
-        }else{
+        } else {
             return false;
         }
     }
@@ -439,7 +453,7 @@ class TunnelController extends Controller
             $update['interface'] = env('TUNNEL_NAME_PREFIX', 'tun') . $tunnel->id;
         }
 
-        if ($port){
+        if ($port) {
             $port = $this->assignPort($tunnel);
             if (!$port) {
                 DB::rollBack();

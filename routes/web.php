@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ASNController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\TunnelController;
 use Illuminate\Foundation\Application;
@@ -18,14 +19,7 @@ use Inertia\Inertia;
 |
 */
 
-Route::get('/', function () {
-    $nodes = \App\Models\Node::all();
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'nodes'=> $nodes
-    ]);
-});
+Route::get('/', [HomeController::class,'index'])->name('index');
 
 Route::get('/nodes',[NodeController::class,'index'])->name('node.index');
 
@@ -34,9 +28,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [HomeController::class,'dashboard'])->name('dashboard');
 
     Route::resource('/tunnels', TunnelController::class)->except([
         'create', 'edit'
