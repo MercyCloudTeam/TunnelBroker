@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TunnelRequest;
 use App\Http\Resources\TunnelResource;
 use App\Http\Resources\TunnelsCollectionResource;
-use App\Jobs\ChangeTunnelIP;
 use App\Jobs\DeleteTunnel;
 use App\Models\IPAllocation;
 use App\Models\Node;
@@ -110,10 +109,10 @@ class TunnelAPIController extends Controller
      */
     public function destroy(Tunnel $tunnel)
     {
-        $this->authorize('delete', $tunnel);
-        DeleteTunnel::dispatch($tunnel);
-        IPAllocation::where('tunnel_id', $tunnel->id)->update(['tunnel_id' => null]);//IP重新进入分配表
-        $tunnel->delete();
+//        $this->authorize('delete', $tunnel);
+//        DeleteTunnel::dispatch($tunnel);
+//        IPAllocation::where('tunnel_id', $tunnel->id)->update(['tunnel_id' => null]);//IP重新进入分配表
+//        $tunnel->delete();
     }
 
 }

@@ -3,13 +3,16 @@
 namespace App\Jobs;
 
 use App\Http\Controllers\NodeController;
+use App\Http\Controllers\TunnelController;
 use App\Models\Tunnel;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use phpseclib3\Net\SSH2;
 
 class TunnelUpdate implements ShouldQueue
@@ -21,6 +24,9 @@ class TunnelUpdate implements ShouldQueue
 
     public int $connectNode;
 
+    public NodeController $nodeController;
+    public TunnelController $tunnelController;
+
     /**
      * Create a new job instance.
      *
@@ -28,19 +34,23 @@ class TunnelUpdate implements ShouldQueue
      */
     public function __construct()
     {
-        //
+        $this->nodeController = new NodeController();
+        $this->tunnelController = new TunnelController();
     }
 
+    /**
+     * @throws Exception
+     */
     public function getSSHConnect(Tunnel $tunnel)
     {
         if (empty($this->connect) || empty($this->connectNode)) {
             //No Connect
-            $this->connect = NodeController::connect($tunnel->node);
+            $this->connect = $this->nodeController->connect($tunnel->node);
             $this->connectNode = $tunnel->node_id;
         } elseif ($this->connectNode != $tunnel->node_id) {
             //Connect Node Changed
             $this->connect->disconnect();
-            $this->connect = NodeController::connect($tunnel->node);
+            $this->connect = $this->nodeController->connect($tunnel->node);
             $this->connectNode = $tunnel->node_id;
         }
     }
@@ -49,6 +59,7 @@ class TunnelUpdate implements ShouldQueue
      * Execute the job.
      *
      * @return void
+     * @throws Exception
      */
     public function handle()
     {
@@ -57,21 +68,21 @@ class TunnelUpdate implements ShouldQueue
         ])->orderBy('node_id', 'desc')->chunk(50, function ($tunnels) {
             foreach ($tunnels as $tunnel) {
                 $this->getSSHConnect($tunnel);
-
-                if (!$this->connect->isConnected()) {
-                    $this->connect = NodeController::connect($tunnel->node);
+//                Log::debug('TunnelUpdate Processing Tunnel:'.$tunnel->id,[$tunnel,$this->connect]);
+                if (!$this->connect->isConnected() || !$this->connect->isAuthenticated()) {
+                    Log::debug('TunnelUpdate SSH Connect Failed', [$tunnel, $this->connect]);
+                    throw new Exception('SSH Connect Failed');
                 }
-
                 switch ($tunnel->status) {
                     case 2:
                     case 6:
-                        CreateTunnel::dispatch($tunnel, $this->connect);
+                        $this->tunnelController->createTunnel($this->connect,$tunnel);
                         break;
                     case 5:
-                        ChangeTunnelIP::dispatch($tunnel, $this->connect);
+                        $this->tunnelController->changeTunnelIP($this->connect,$tunnel);
                         break;
                     case 7:
-                        DeleteTunnel::dispatch($tunnel, $this->connect);
+                        $this->tunnelController->delTunnel($this->connect,$tunnel);
                         break;
                 }
             }

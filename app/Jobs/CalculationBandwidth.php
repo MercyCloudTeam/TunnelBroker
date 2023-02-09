@@ -134,7 +134,7 @@ class CalculationBandwidth implements ShouldQueue
 
     public function pregBandwidth(Tunnel $tunnel, $netDevFile)
     {
-        preg_match("/{$tunnel->interface}:\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\d+)/", $netDevFile, $preg_arr);
+        preg_match("/$tunnel->interface:\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\d+)/", $netDevFile, $preg_arr);
         //两个同时为空的情况下，则获取失败
         if (!isset($preg_arr[1]) && !isset($preg_arr[2])) {
             Log::info('Interface not found：', [$tunnel->toArray()]);
@@ -147,7 +147,7 @@ class CalculationBandwidth implements ShouldQueue
             $in = $this->cacheBandwidth("{$tunnel->interface}-in", $thisre, $tunnel->in);
             $out = $this->cacheBandwidth("{$tunnel->interface}-out", $thistr, $tunnel->out);
 //            $dbBandwidth = $tunnel-
-            $dbIn = $tunnel->bandwidth->in;
+//            $dbIn = $tunnel->bandwidth->in;
             if ($in !== $tunnel->in || $out !== $tunnel->out) { //发生改变才更新
 //            todo 20230106 Table Change
 

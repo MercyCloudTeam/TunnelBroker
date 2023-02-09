@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Route\FRRController;
 use App\Http\Requests\TunnelRequest;
 use App\Http\Resources\TunnelResource;
 use App\Http\Resources\TunnelsCollectionResource;
-use App\Jobs\ChangeTunnelIP;
-use App\Jobs\DeleteTunnel;
 use App\Models\ASN;
 use App\Models\IPAllocation;
 use App\Models\Node;
@@ -21,6 +20,8 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use IPTools\Network;
 use Log;
+use phpseclib3\Net\SSH2;
+use Throwable;
 
 
 class TunnelController extends Controller
@@ -489,6 +490,101 @@ class TunnelController extends Controller
         }
         DB::commit();
         //v6默认使用 ::2  v4则按CIDR大小使用第一个IP
+    }
+
+    public function delTunnel(SSH2 $ssh, Tunnel $tunnel)
+    {
+        if ($tunnel->status == 7) {
+            $result[] = $ssh->exec($this->deleteTunnelCommand($tunnel));//执行创建Tunnel命令
+//            if (!empty($tunnel->asn_id)) {//清理BGP配置
+//                $result[] = $ssh->exec((new FRRController())->deleteBGP($tunnel));
+//            }
+            Log::debug('DelTunnel Exec result', [$result]);
+            $tunnel->delete();
+        }
+
+    }
+
+    public function changeTunnelIP(SSH2 $ssh, Tunnel $tunnel)
+    {
+        if ($tunnel->status == 5) {
+            $result = [];
+            $command = $ssh->exec($this->changeTunnelCommand($tunnel));
+            if (is_array($command)) {
+                foreach ($command as $cmd) {
+                    $result[] = $ssh->exec($cmd);
+                }
+            } elseif (is_string($command)) {
+                $result[] = $ssh->exec($command);
+            }
+
+            Log::debug('ChangeTunnelIp Exec result', [$result, $command]);
+            $tunnel->update(['status' => 1]);
+        }
+    }
+
+    public function createTunnel(SSH2 $ssh, Tunnel $tunnel)
+    {
+        if ($tunnel->status == 2) {
+            if (isset($tunnel->ip4) || isset($tunnel->ip6)) {
+                //如果在等待创建期间已经分配了IP的话则删除重新分配
+                IPAllocation::where('tunnel_id', $tunnel->id)->update(['tunnel_id' => null]);
+                $tunnel->update([
+                    'ip4' => null,
+                    'ip6' => null,
+                ]);
+            } else {
+                try {
+                    $this->assignIP($tunnel);
+                } catch (Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('Tunnel IP allocation failed', [$e->getMessage(), $tunnel->toArray()]);
+                    $tunnel->update(['status' => 4]);
+                    return;
+                }
+                $tunnel->refresh();//重新加载模型
+                $this->createTunnelAction($ssh, $tunnel);
+
+            }
+        }
+
+        if ($tunnel->status == 6) {
+            $this->createTunnelAction($ssh, $tunnel);
+        }
+    }
+
+    public function createTunnelAction(SSH2 $ssh, Tunnel $tunnel)
+    {
+        $command = $this->createTunnelCommand($tunnel);
+        if (is_array($command)) {
+            foreach ($command as $cmd) {
+                $result[] = $ssh->exec($cmd);
+            }
+        } elseif (is_string($command)) {
+            $result[] = $ssh->exec($command);
+        }
+        $result[] = $ssh->exec("sudo ip link set dev $tunnel->interface up");//启动Tunnel
+        //给网口添加地址
+        if (isset($tunnel->ip4) && isset($tunnel->ip6)) {
+            $ip6 = (string)Network::parse("$tunnel->ip6/$tunnel->ip6_cidr")->getFirstIP()->next();
+            $ip4 = (string)Network::parse("$tunnel->ip4/$tunnel->ip4_cidr")->getFirstIP()->next();
+            $result[] = $ssh->exec("sudo ip addr add $ip6/{$tunnel->ip6_cidr} dev $tunnel->interface");
+            $result[] = $ssh->exec("sudo ip addr add $ip4/{$tunnel->ip4_cidr} dev $tunnel->interface");
+        } elseif (isset($tunnel->ip6)) {
+            $ip6 = (string)Network::parse("$tunnel->ip6/$tunnel->ip6_cidr")->getFirstIP()->next();
+            $result[] = $ssh->exec("sudo ip addr add $ip6/$tunnel->ip6_cidr dev $tunnel->interface");
+        } elseif (isset($tunnel->ip4)) {
+            $ip4 = (string)Network::parse("$tunnel->ip4/{$tunnel->ip4_cidr}")->getFirstIP()->next();
+            $result[] = $ssh->exec("sudo ip addr add $ip4/$tunnel->ip4_cidr dev $tunnel->interface");
+        }
+        Log::debug("Create Tunnel Result", $result);
+        foreach ($result as $item) {
+            if (!empty($item)) {
+                Log::info("Tunnel($tunnel->id) creation return", [$item, $command]);
+//                $tunnel->update(['status' => 6]);
+            }
+        }
+        //执行完成
+        $tunnel->update(['status' => 1]);
     }
 
 

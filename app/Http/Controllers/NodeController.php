@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\IPAllocation;
 use App\Models\Node;
+use App\Models\Tunnel;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use IPTools\Network;
 use phpseclib3\Net\SSH2;
+use Throwable;
 
 class NodeController extends Controller
 {
@@ -23,13 +28,13 @@ class NodeController extends Controller
      * 连接服务器
      * @param Node $node
      * @return SSH2
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function connect(Node $node)
+    public function connect(Node $node): SSH2
     {
 
-        $ssh = new SSH2($node->ip,$node->port,15);
-        switch($node->login_type){
+        $ssh = new SSH2($node->ip, $node->port, 15);
+        switch ($node->login_type) {
             case "password":
                 $ssh->login($node->username, $node->password);
                 break;
@@ -38,13 +43,18 @@ class NodeController extends Controller
 //                $ssh->login($node->username,new Crypt)
                 break;
         }
-        if (empty($ssh) || !$ssh->isAuthenticated()) {
+        if ($ssh->isAuthenticated() && $ssh->isConnected()) {
+            //成功的登入
+            return $ssh;
+        } else {
             //错误的密码将进入这个流程
             //不匹配的验证方式（键盘输入/没有认证）
             //ps：对于这种恶臭登入方式的服务器有什么连接的必有嘛？
-            Log::info('Login Server Fail',$node->toArray());
-            throw new \Exception("Password Error",'1001');
+            Log::info('Login Server Fail', ['node' => $node->toArray(), 'error' => $ssh->getErrors()]);
+            throw new Exception('Login Server Fail');
         }
-            return $ssh;
     }
+
+
+
 }
