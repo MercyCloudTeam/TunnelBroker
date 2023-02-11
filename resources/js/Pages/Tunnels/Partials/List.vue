@@ -83,6 +83,9 @@ const detailTunnel = useForm({
                             <div class="text-right">
                                 {{ tunnel.remote }}
                             </div>
+                            <div class="text-right">
+                                {{ tunnel.status }}
+                            </div>
                             <div class="flex items-center ml-2">
                                 <div class="text-sm text-gray-400">
                                     {{ tunnel.mode }}
@@ -93,7 +96,7 @@ const detailTunnel = useForm({
                                         @click="displayTunnelInfo(tunnel)">
                                     Detail
                                 </button>
-                                <button class="cursor-pointer ml-6 text-sm text-red-500"
+                                <button v-if="tunnel.status !== 7" class="cursor-pointer ml-6 text-sm text-red-500"
                                         @click="confirmTunnelDeletion(tunnel)">
                                     Delete
                                 </button>
