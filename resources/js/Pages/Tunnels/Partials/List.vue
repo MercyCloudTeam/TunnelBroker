@@ -40,6 +40,7 @@ const deleteTunnel = () => {
         errorBag: 'deleteTunnel',
         onSuccess: () => {
             delTunnelForm.reset();
+
         },
         onError: () => {
             console.log(delTunnelForm.errors.deleteTunnel);
@@ -55,6 +56,41 @@ const delTunnelForm = useForm({
 const detailTunnel = useForm({
     tunnel: null,
 })
+
+const getStatusDisplay = (status) => {
+    switch (status) {
+        case 1:
+            return {
+                'class': 'text-green-600',
+                'text': 'Active'
+            };
+        case 2:
+            return {
+                'class': 'text-yellow-600',
+                'text': 'Waiting Create'
+            };
+        case 4:
+            return {
+                'class': 'text-yellow-600',
+                'text': 'Create Error(Waiting Retry)'
+            }
+        case 5:
+            return {
+                'class': 'text-red-600',
+                'text': 'IP Changed'
+            };
+        case 6:
+            return {
+                'class': 'text-red-600',
+                'text': 'Error'
+            };
+        case 7:
+            return {
+                'class': 'text-red-600',
+                'text': 'Deleting'
+            };
+    }
+}
 
 </script>
 
@@ -73,35 +109,61 @@ const detailTunnel = useForm({
                     You
                 </template>
 
-                <!-- API Token List -->
                 <template #content>
-                    <div class="space-y-6">
-                        <div v-for="tunnel in tunnels" :key="tunnel.id" class="flex justify-between">
-                            <div class="break-all">
-                                #{{ tunnel.id }}
-                            </div>
-                            <div class="text-right">
-                                {{ tunnel.remote }}
-                            </div>
-                            <div class="text-right">
-                                {{ tunnel.status }}
-                            </div>
-                            <div class="flex items-center ml-2">
-                                <div class="text-sm text-gray-400">
-                                    {{ tunnel.mode }}
-                                </div>
-                            </div>
-                            <div class="flex">
-                                <button class="cursor-pointer ml-6 text-sm text-blue-500"
-                                        @click="displayTunnelInfo(tunnel)">
-                                    Detail
-                                </button>
-                                <button v-if="tunnel.status !== 7" class="cursor-pointer ml-6 text-sm text-red-500"
-                                        @click="confirmTunnelDeletion(tunnel)">
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y-2 divide-gray-200 text-sm">
+                            <thead>
+                            <tr>
+                                <th
+                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
+                                >
+                                    ID
+                                </th>
+                                <th
+                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
+                                >
+                                    Remote Address
+                                </th>
+                                <th
+                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
+                                >
+                                    Status
+                                </th>
+                                <th
+                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
+                                >
+                                    Protocol
+                                </th>
+                                <th
+                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900 text-right"
+                                >
+                                    Action
+                                </th>
+                                <th class="px-4 py-2"></th>
+                            </tr>
+                            </thead>
+
+                            <tbody class="divide-y divide-gray-200">
+                            <tr v-for="tunnel in tunnels" :key="tunnel.id">
+                                <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+                                    {{ tunnel.id }}
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ tunnel.remote }}</td>
+                                <td class="whitespace-nowrap px-4 py-2" :class="getStatusDisplay(tunnel.status).class">{{ getStatusDisplay(tunnel.status).text }}</td>
+                                <td class="whitespace-nowrap px-4 py-2 text-gray-700"> {{ tunnel.mode }}</td>
+                                <td class="whitespace-nowrap px-4 py-2 text-right">
+                                    <button class="cursor-pointer ml-6 text-sm text-blue-500"
+                                            @click="displayTunnelInfo(tunnel)">
+                                        Detail
+                                    </button>
+                                    <button v-if="tunnel.status !== 7" class="cursor-pointer ml-6 text-sm text-red-500"
+                                            @click="confirmTunnelDeletion(tunnel)">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </template>
             </ActionSection>

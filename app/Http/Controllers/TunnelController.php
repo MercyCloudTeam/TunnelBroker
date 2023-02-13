@@ -10,6 +10,7 @@ use App\Models\ASN;
 use App\Models\IPAllocation;
 use App\Models\Node;
 use App\Models\Tunnel;
+use App\Models\TunnelTraffic;
 use App\Rules\TunnelIP;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -182,7 +183,7 @@ class TunnelController extends Controller
         if (is_string($status)) {
             return Redirect::back()->with('success', config('status.code' . $status));
         } else {
-            return Redirect::route('tunnels.index')->with('success', '创建Tunnel成功');
+            return Redirect::route('tunnels.index')->with('success', 'Create Success');
         }
 
     }
@@ -218,15 +219,32 @@ class TunnelController extends Controller
                     $ed25519PrivKey = sodium_crypto_sign_secretkey($ed25519);
                     $curve25519PubKey = sodium_crypto_sign_ed25519_pk_to_curve25519($ed25519PubKey);
                     $curve25519PrivKey = sodium_crypto_sign_ed25519_sk_to_curve25519($ed25519PrivKey);
+                    if (empty($request->pubkey)) {
+                        //User not configure pubkey
+                        $userEd25519 = sodium_crypto_sign_keypair();
+                        $userPubKey = sodium_crypto_sign_publickey($userEd25519);
+                        $userPrivKey = sodium_crypto_sign_secretkey($userEd25519);
+                        $userPubKeyCurve25519 = sodium_crypto_sign_ed25519_pk_to_curve25519($userPubKey);
+                        $userPrivKeyCurve25519 = sodium_crypto_sign_ed25519_sk_to_curve25519($userPrivKey);
+                    }
                 } catch (\Exception $e) {
                     return throw ValidationException::withMessages([
                         'tunnel' => ["WireGuard key generation failed"],
                     ]);
                 }
-                $config = [
-                    'remote' => ['pubkey' => $request->pubkey],
-                    'local' => ['pubkey' => base64_encode($curve25519PubKey), 'privkey' => base64_encode($curve25519PrivKey)],
-                ];
+
+                if (empty($request->pubkey)) {
+                    $config = [
+                        'remote' => ['pubkey' => base64_encode($userPubKeyCurve25519), 'privkey' => base64_encode($userPrivKeyCurve25519)],
+                        'local' => ['pubkey' => base64_encode($curve25519PubKey), 'privkey' => base64_encode($curve25519PrivKey)],
+                    ];
+                } else {
+                    $config = [
+                        'remote' => ['pubkey' => $request->pubkey],
+                        'local' => ['pubkey' => base64_encode($curve25519PubKey), 'privkey' => base64_encode($curve25519PrivKey)],
+                    ];
+                }
+
                 break;
         }
 
@@ -522,6 +540,7 @@ class TunnelController extends Controller
             $tunnel->update(['status' => 1]);
         }
     }
+
 
     public function createTunnel(SSH2 $ssh, Tunnel $tunnel)
     {

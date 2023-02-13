@@ -11,8 +11,12 @@ class TunnelTraffic extends Model
 
     protected $table = 'tunnel_traffic';
 
+    protected $casts = [
+        'deadline' => 'datetime',
+    ];
+
     protected $fillable = [
-        'tunnel_id','in','out'
+        'tunnel_id', 'in', 'out', 'deadline'
     ];
 
     public function tunnel()

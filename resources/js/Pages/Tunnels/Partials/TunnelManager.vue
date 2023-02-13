@@ -29,6 +29,9 @@ const createTunnel = () => {
             createTunnelForm.reset('remote', 'mode', 'node','pubkey','port');
             displayingToken.value = true;
             createTunnelForm.reset();
+            displayPubKeyInput.value = false;
+            displayPortInput.value = false;
+
         },
         onError: () => {
             console.log(createTunnelForm.errors.createTunnel.remote);

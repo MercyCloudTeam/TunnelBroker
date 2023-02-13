@@ -66,9 +66,32 @@ class Tunnel extends Model
         return $this->hasMany('App\Models\IPAllocation', 'tunnel_id', 'id');
     }
 
-    public function bandwidth()
+    public function traffic()
     {
-        return $this->hasMany('App\Models\Bandwidth', 'tunnel_id', 'id');
+        return $this->hasMany('App\Models\TunnelTraffic', 'tunnel_id', 'id');
+    }
+
+    public function trafficSum(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                //Get All Traffic
+                $traffics = TunnelTraffic::where([
+                    ['tunnel_id', '=', $this->id],
+                ])->get();
+                //Sum
+                $in = 0;
+                $out = 0;
+                foreach ($traffics as $traffic) {
+                    $in += $traffic->in;
+                    $out += $traffic->out;
+                }
+                return [
+                    'in' => $in,
+                    'out' => $out,
+                ];
+            }
+        );
     }
 
 }

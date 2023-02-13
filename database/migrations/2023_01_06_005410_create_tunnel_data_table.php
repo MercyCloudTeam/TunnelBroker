@@ -18,6 +18,8 @@ return new class extends Migration
             $table->foreignId('tunnel_id');
             $table->bigInteger('in')->default(0);//入网流量
             $table->bigInteger('out')->default(0);//出网流量
+            //deadline
+            $table->dateTime('deadline')->nullable();
             $table->timestamps();
         });
     }

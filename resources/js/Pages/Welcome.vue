@@ -2,31 +2,31 @@
 import { Head, Link } from '@inertiajs/inertia-vue3';
 import Header from "@/Components/Header.vue";
 import NodeCard from "@/Components/NodeCard.vue";
-import { BoltIcon, DevicePhoneMobileIcon, GlobeAltIcon, ScaleIcon } from '@heroicons/vue/24/outline'
+import { BoltIcon, CubeIcon, GlobeAltIcon, ScaleIcon } from '@heroicons/vue/24/outline'
 const features = [
     {
-        name: 'Competitive exchange rates',
+        name: 'Global Nodes',
         description:
-            'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores impedit perferendis suscipit eaque, iste dolor cupiditate blanditiis ratione.',
+            '',
         icon: GlobeAltIcon,
     },
     {
-        name: 'No hidden fees',
+        name: 'Fair price',
         description:
             'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores impedit perferendis suscipit eaque, iste dolor cupiditate blanditiis ratione.',
         icon: ScaleIcon,
     },
     {
-        name: 'Transfers are instant',
+        name: 'Fast network',
         description:
             'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores impedit perferendis suscipit eaque, iste dolor cupiditate blanditiis ratione.',
         icon: BoltIcon,
     },
     {
-        name: 'Mobile notifications',
+        name: 'Multi-protocol support',
         description:
-            'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores impedit perferendis suscipit eaque, iste dolor cupiditate blanditiis ratione.',
-        icon: DevicePhoneMobileIcon,
+            'We support WireGuard, SIT, GRE, VXLAN, IPIP and other access protocols',
+        icon: CubeIcon,
     },
 ]
 defineProps({
@@ -45,8 +45,8 @@ defineProps({
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
             <div class="sm:text-center">
                 <h2 class="text-lg font-semibold leading-8 text-indigo-600">TunnelBroker</h2>
-                <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">A better way to send money</p>
-                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">Lorem ipsum dolor sit amet consect adipisicing elit. Possimus magnam voluptatum cupiditate veritatis in accusamus quisquam.</p>
+                <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">A better open source TunnelBroker project</p>
+                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">.</p>
             </div>
 
             <div class="mt-20 max-w-lg sm:mx-auto md:max-w-none">

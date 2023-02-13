@@ -41,19 +41,14 @@ class BGPCheck implements ShouldQueue
         ])->chunk(50,function ($nodes){
             //创建IP规则，从IP池中生成，当tunnel呗删除则清空分配的id，但是已经创建的分配记录不会呗删除，优先使用已被分配的、否则再通过IP池创建新记录
             foreach ($nodes as $node){
-
-
-//                $ssh = NodeController::connect($node);
                 $ssh = (new NodeController())->connect($node);
                 $result = $ssh->exec( 'vtysh -c "sh bgp neighbors json"');
-
                 $json = json_decode($result);
                 if (!empty($json)){
                     $tunnels = Tunnel::where([
                        ['node_id','=',$node->id],
                        ['asn_id','!=',null]
                     ])->get();
-
                     if (!$tunnels->isEmpty()){
                         $frrList = [];
                         foreach ($json as $k=>$item){
@@ -61,7 +56,6 @@ class BGPCheck implements ShouldQueue
                             $frrList[] = $k;
                             //TODO:更详细的检测
                         }
-
                         foreach ($tunnels as $tunnel){
                             $configure = false;
                             if (isset($tunnel->ip4)){
@@ -82,16 +76,9 @@ class BGPCheck implements ShouldQueue
                                 BGPConfigure::dispatch($tunnel);
                             }
                         }
-
-
-
                     }
-
                 }
-
             }
         });
-
-
     }
 }
