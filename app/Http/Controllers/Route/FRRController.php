@@ -16,7 +16,7 @@ class FRRController extends Controller
      */
     public function commandBGP($nodeASN): string
     {
-        return "vtysh -c \" conf t
+        return "sudo vtysh -c \" conf t
         router bgp {$nodeASN}
         ";
     }

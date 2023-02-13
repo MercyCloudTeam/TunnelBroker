@@ -80,62 +80,6 @@ class AdminTablesSeeder extends Seeder
                     'uri'           => 'auth/extensions',
                     'created_at'    => $createdAt,
                 ],
-                [
-                    "parent_id" => 0,
-                    "order" => 8,
-                    "title" => "tunnel",
-                    "icon" => "fa-cloud",
-                    "uri" => "/tunnels",
-                    'created_at'    => $createdAt,
-                ],
-                [
-                    "parent_id" => 0,
-                    "order" => 9,
-                    "title" => "node",
-                    "icon" => "fa-server",
-                    "uri" => "/nodes",
-                    'created_at'    => $createdAt,
-                ],
-                [
-                    "parent_id" => 0,
-                    "order" => 10,
-                    "title" => "ippool",
-                    "icon" => "fa-connectdevelop",
-                    "uri" => "/ip/pool",
-                    'created_at'    => $createdAt,
-                ],
-                [
-                    "parent_id" => 0,
-                    "order" => 11,
-                    "title" => "ipallocation",
-                    "icon" => "fa-globe",
-                    "uri" => "/ip/allocation",
-                    'created_at'    => $createdAt,
-                ],
-                [
-                    "parent_id" => 0,
-                    "order" => 12,
-                    "title" => "asn",
-                    "icon" => "fa-jsfiddle",
-                    "uri" => "/asn",
-                    'created_at'    => $createdAt,
-                ],
-                [
-                    "parent_id" => 0,
-                    "order" => 13,
-                    "title" => "bgp_filter",
-                    "icon" => "fa-fire",
-                    "uri" => "/bgp/filter",
-                    'created_at'    => $createdAt,
-                ],
-                [
-                    "parent_id" => 0,
-                    "order" => 14,
-                    "title" => "user",
-                    "icon" => "fa-user",
-                    "uri" => "/user",
-                    'created_at'    => $createdAt,
-                ]
             ]
         );
 

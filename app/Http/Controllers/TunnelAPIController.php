@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TunnelRequest;
 use App\Http\Resources\TunnelResource;
 use App\Http\Resources\TunnelsCollectionResource;
-use App\Jobs\ChangeTunnelIP;
 use App\Jobs\DeleteTunnel;
 use App\Models\IPAllocation;
 use App\Models\Node;
@@ -43,15 +42,14 @@ class TunnelAPIController extends Controller
      * @param Request $request
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function tunnelDDNSUpdate(Tunnel $tunnel,Request $request)
+    public function tunnelDDNSUpdate(Tunnel $tunnel, Request $request)
     {
         $this->authorize('update', $tunnel);
-        if ($tunnel !== $request->ip()){//如果请求IP与当前记录不同
+        if ($tunnel !== $request->ip()) {//如果请求IP与当前记录不同
             //数据记录更新
             $tunnel->update([
-                'status'=>5
+                'status' => 5
             ]);
-            ChangeTunnelIP::dispatch($tunnel);//更改Tunnel对端ip
         }
     }
 
@@ -64,9 +62,9 @@ class TunnelAPIController extends Controller
     public function store(TunnelRequest $request)
     {
         $status = (new TunnelController())->storeAction($request);
-        if (is_string($status)){
+        if (is_string($status)) {
             return $this->jsonResult($status);
-        }else{
+        } else {
             return $this->jsonResult('SUCCESS', $status->toArray());
         }
     }
@@ -95,7 +93,7 @@ class TunnelAPIController extends Controller
     public function update(Request $request, Tunnel $tunnel)
     {
         $this->authorize('update', $tunnel);
-        $status = (new TunnelController())->updateAction($request,$tunnel);;
+        $status = (new TunnelController())->updateAction($request, $tunnel);;
         if ($status) {
             return $this->jsonResult('SUCCESS');
         }
@@ -111,10 +109,10 @@ class TunnelAPIController extends Controller
      */
     public function destroy(Tunnel $tunnel)
     {
-        $this->authorize('delete', $tunnel);
-        DeleteTunnel::dispatch($tunnel);
-        IPAllocation::where('tunnel_id',$tunnel->id)->update(['tunnel_id'=>null]);//IP重新进入分配表
-        $tunnel->delete();
+//        $this->authorize('delete', $tunnel);
+//        DeleteTunnel::dispatch($tunnel);
+//        IPAllocation::where('tunnel_id', $tunnel->id)->update(['tunnel_id' => null]);//IP重新进入分配表
+//        $tunnel->delete();
     }
 
 }

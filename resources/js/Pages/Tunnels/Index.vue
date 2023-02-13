@@ -1,38 +1,32 @@
+<script setup>
+import AppLayout from '@/Layouts/AppLayout.vue';
+import List from "@/Pages/Tunnels/Partials/List.vue";
+import TunnelManager from "@/Pages/Tunnels/Partials/TunnelManager.vue";
+
+defineProps({
+    tunnels: Array,
+    nodes: Array,
+    availableMode: Array,
+});
+</script>
+
 <template>
-    <app-layout>
+    <AppLayout title="Tunnels">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                隧道(Tunnels)
+                Tunnels
             </h2>
         </template>
 
         <div>
+            <div v-if="tunnels.length > 0">
+                <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+                    <List :tunnels="tunnels"/>
+                </div>
+            </div>
             <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-                <tunnel-manager  :tunnels="tunnels" :available-mode="availableMode" :display-a-s-n-select="displayASNSelect"  :asn="asn" :defaultASN="defaultASN" :defaultNode="defaultNode" :nodes="nodes" :default-mode="defaultMode"></tunnel-manager>
+                <TunnelManager  :tunnels="tunnels" :available-mode="availableMode" :nodes="nodes" ></TunnelManager>
             </div>
         </div>
-    </app-layout>
+    </AppLayout>
 </template>
-
-<script>
-    import AppLayout from '@/Layouts/AppLayout'
-    import TunnelManager from "@/Pages/Tunnels/TunnelManager";
-
-    export default {
-        props: [
-            'tunnels',
-            'asn',
-            'nodes',
-            'availableMode',
-            'defaultMode',
-            'defaultNode',
-            'displayASNSelect',
-            'defaultASN',
-        ],
-
-        components: {
-            TunnelManager,
-            AppLayout,
-        },
-    }
-</script>

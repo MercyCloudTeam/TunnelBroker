@@ -60,14 +60,26 @@ class TunnelIP implements Rule
                     return false;
                 }
                 break;
+            case 'wireguard':
+            case 'vxlan':
+                break;
             default:
                 return false;
         }
+
         if (!Tunnel::where([
             ['remote','=',$value],
             ['node_id','=',(int) $this->node_id]
         ])->get()->isEmpty()){
             return false;//同一节点只能有一个
+        }
+
+        $node =  Node::find($this->node_id);
+        if ($node === null){
+            return false;//节点不存在
+        }
+        if ($value === $node->ip || $value === $node->ip6){
+            return false;//不能是本节点IP
         }
 
         return true;
@@ -80,6 +92,6 @@ class TunnelIP implements Rule
      */
     public function message()
     {
-        return 'IP非法(格式不正确/已被使用/非法提交)，（拒绝阴间IP）';
+        return 'IP address error (incorrectly formatted/used/illegally submitted)';
     }
 }

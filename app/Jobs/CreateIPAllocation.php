@@ -38,19 +38,27 @@ class CreateIPAllocation implements ShouldQueue
      */
     public function handle()
     {
-        if ($this->ipPool->generated && empty(IPAllocation::where('ip_pool_id',$this->ipPool)->count())){
+        if ($this->ipPool->generated && empty(IPAllocation::where('ip_pool_id', $this->ipPool)->count())) {
             $networks = Network::parse("{$this->ipPool->ip}/{$this->ipPool->cidr}")->moveTo($this->ipPool->allocation_size);
-            $chunks = array_chunk($networks,1000);
+            $chunks = array_chunk($networks, 1000);
             $ipTemplate = [
-                'ip_pool_id'=>$this->ipPool->id,
-                'type'=>$this->ipPool->ip_type,
-                'node_id'=>$this->ipPool->node_id,
-                'cidr'=>$this->ipPool->allocation_size
+                'ip_pool_id' => $this->ipPool->id,
+                'type' => $this->ipPool->ip_type,
+                'node_id' => $this->ipPool->node_id,
+                'cidr' => $this->ipPool->allocation_size,
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
-            foreach ($chunks as $chunk){
+            foreach ($chunks as $chunk) {
                 $data = [];
-                foreach ($chunk as $network){
-                    $ipTemplate['ip']=str_replace("/{$this->ipPool->allocation_size}",'',$network);//移除CIDR
+                foreach ($chunk as $network) {
+                    $ip = str_replace("/{$this->ipPool->allocation_size}", '', $network);//移除CIDR
+                    $ipTemplate['ip'] = $ip;
+//                    if ($ipTemplate['type'] == 'ipv6') {
+//                        $ipTemplate['last_section'] = substr($ip, strrpos($ip, ':') + 1);
+//                    } else {
+//                        $ipTemplate['last_section'] = explode('.',$ip)[3];
+//                    }
                     $data[] = $ipTemplate;
                 }
                 DB::table('ip_allocation')->insert($data);

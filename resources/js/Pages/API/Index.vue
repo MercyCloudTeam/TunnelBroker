@@ -1,5 +1,16 @@
+<script setup>
+import ApiTokenManager from '@/Pages/API/Partials/ApiTokenManager.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
+
+defineProps({
+    tokens: Array,
+    availablePermissions: Array,
+    defaultPermissions: Array,
+});
+</script>
+
 <template>
-    <app-layout>
+    <AppLayout title="API Tokens">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 API Tokens
@@ -8,30 +19,12 @@
 
         <div>
             <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-                <api-token-manager :tokens="tokens"
-                                   :available-permissions="availablePermissions"
-                                   :default-permissions="defaultPermissions" />
+                <ApiTokenManager
+                    :tokens="tokens"
+                    :available-permissions="availablePermissions"
+                    :default-permissions="defaultPermissions"
+                />
             </div>
         </div>
-    </app-layout>
+    </AppLayout>
 </template>
-
-<script>
-    import ApiTokenManager from './ApiTokenManager'
-    import AppLayout from '@/Layouts/AppLayout'
-    import JetSectionBorder from '@/Jetstream/SectionBorder'
-
-    export default {
-        props: [
-            'tokens',
-            'availablePermissions',
-            'defaultPermissions',
-        ],
-
-        components: {
-            ApiTokenManager,
-            AppLayout,
-            JetSectionBorder,
-        },
-    }
-</script>

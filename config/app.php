@@ -80,7 +80,7 @@ return [
     |
     */
 
-    'locale' => 'zh_CN',
+    'locale' => 'en',
 
     /*
     |--------------------------------------------------------------------------
@@ -176,6 +176,8 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
+
+        OwenIt\Auditing\AuditingServiceProvider::class,
 
     ],
 

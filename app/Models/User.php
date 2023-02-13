@@ -8,16 +8,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
-use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 use OwenIt\Auditing\Contracts\Auditable;
 
-class User extends Authenticatable implements Auditable,MustVerifyEmail
+class User extends Authenticatable implements Auditable
 {
     use HasApiTokens;
     use HasFactory;
     use HasProfilePhoto;
-    use HasTeams;
     use Notifiable;
     use TwoFactorAuthenticatable;
     use \OwenIt\Auditing\Auditable;
@@ -25,14 +23,16 @@ class User extends Authenticatable implements Auditable,MustVerifyEmail
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var string[]
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name',
+        'email',
+        'password',
     ];
 
     /**
-     * The attributes that should be hidden for arrays.
+     * The attributes that should be hidden for serialization.
      *
      * @var array
      */
@@ -44,7 +44,7 @@ class User extends Authenticatable implements Auditable,MustVerifyEmail
     ];
 
     /**
-     * The attributes that should be cast to native types.
+     * The attributes that should be cast.
      *
      * @var array
      */
@@ -61,17 +61,25 @@ class User extends Authenticatable implements Auditable,MustVerifyEmail
         'profile_photo_url',
     ];
 
-
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function tunnels()
     {
-        return $this->hasMany('App\Models\Tunnel');
+        return $this->hasMany(Tunnel::class);
     }
 
-    public function asn()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough
+     */
+    public function plan()
     {
-        return $this->hasMany('App\Models\ASN','user_id','id');
+        return $this->hasOneThrough(Plan::class, UserPlan::class, 'user_id', 'id', 'id', 'plan_id');
     }
+
+    public function userPlan()
+    {
+        return $this->hasOne(UserPlan::class, 'user_id', 'id');
+    }
+
 }
-
-
-
