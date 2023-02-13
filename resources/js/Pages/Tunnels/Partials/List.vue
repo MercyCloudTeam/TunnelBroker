@@ -14,6 +14,7 @@ import SectionBorder from '@/Components/SectionBorder.vue';
 import TextInput from '@/Components/TextInput.vue';
 import {ref} from "vue";
 import {useForm} from "@inertiajs/inertia-vue3";
+import Swal from "sweetalert2";
 
 defineProps({
     tunnels: Array,
@@ -40,7 +41,11 @@ const deleteTunnel = () => {
         errorBag: 'deleteTunnel',
         onSuccess: () => {
             delTunnelForm.reset();
-
+            Swal.fire({
+                icon: 'success',
+                title: 'Tunnel deleted',
+                text: 'Tunnel deleted successfully,Tunnel will be deleted in 1 minute',
+            })
         },
         onError: () => {
             console.log(delTunnelForm.errors.deleteTunnel);
@@ -149,7 +154,9 @@ const getStatusDisplay = (status) => {
                                     {{ tunnel.id }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ tunnel.remote }}</td>
-                                <td class="whitespace-nowrap px-4 py-2" :class="getStatusDisplay(tunnel.status).class">{{ getStatusDisplay(tunnel.status).text }}</td>
+                                <td class="whitespace-nowrap px-4 py-2" :class="getStatusDisplay(tunnel.status).class">
+                                    {{ getStatusDisplay(tunnel.status).text }}
+                                </td>
                                 <td class="whitespace-nowrap px-4 py-2 text-gray-700"> {{ tunnel.mode }}</td>
                                 <td class="whitespace-nowrap px-4 py-2 text-right">
                                     <button class="cursor-pointer ml-6 text-sm text-blue-500"
@@ -197,7 +204,19 @@ const getStatusDisplay = (status) => {
 
             <template #content>
                 <div>
-                    Are
+
+                    <p> Remote Address: {{ detailTunnel.tunnel.remote }} </p>
+
+                    <p>Protocol: {{ detailTunnel.tunnel.mode }}</p>
+                    <p>Status: <span
+                        :class="getStatusDisplay(detailTunnel.tunnel.status).class">{{ getStatusDisplay(detailTunnel.tunnel.status).text }}</span>
+                    </p>
+                    <p>Created At: {{ detailTunnel.tunnel.created_at }}</p>
+                    <div v-if="detailTunnel.tunnel.config">
+                        <p v-if="detailTunnel.tunnel.config.local.pubkey">Local Public Key: {{detailTunnel.tunnel.config.local.pubkey}}</p>
+                        <p v-if="detailTunnel.tunnel.config.local.privkey">Local Privacy Key: {{detailTunnel.tunnel.config.local.privkey}}</p>
+                        <p v-if="detailTunnel.tunnel.config.remote.pubkey">Server Public Key: {{detailTunnel.tunnel.config.remote.pubkey}}</p>
+                    </div>
                 </div>
             </template>
 

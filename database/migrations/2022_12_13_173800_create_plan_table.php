@@ -18,11 +18,11 @@ return new class extends Migration {
             $table->string('slug')->nullable();
             $table->json('data')->nullable();
             $table->string('description')->nullable();
-            $table->bigInteger('limit');
+            $table->bigInteger('limit');//Tunnel num Limit
             $table->integer('ipv6_num');
             $table->integer('ipv4_num');
-            $table->bigInteger('bandwidth')->nullable();
-            $table->bigInteger('traffic');
+            $table->bigInteger('speed')->nullable();//mbit
+            $table->bigInteger('traffic'); //bytes
             $table->timestamps();
         });
 
@@ -31,7 +31,8 @@ return new class extends Migration {
             $table->foreignId('plan_id');
             $table->foreignId('user_id');
             $table->dateTime('expire_at');
-            $table->dateTime('reset_time'); // Reset Bandwidth Calendar Day
+//            $table->dateTime('reset_time'); // Reset Bandwidth Calendar Day
+            $table->integer('reset_day'); // Reset Bandwidth Calendar Day
             $table->timestamps();
         });
     }

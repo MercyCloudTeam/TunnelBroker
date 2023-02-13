@@ -3,7 +3,6 @@
 namespace App\Console;
 
 use App\Jobs\BGPCheck;
-use App\Jobs\CalculationBandwidth;
 use App\Jobs\NodeStatusCheck;
 use App\Jobs\NodeUpdate;
 use App\Jobs\TunnelUpdate;

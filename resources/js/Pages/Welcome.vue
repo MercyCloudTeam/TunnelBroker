@@ -7,19 +7,20 @@ const features = [
     {
         name: 'Global Nodes',
         description:
-            '',
+            'Multiple network nodes around the world for comfortable access to the Internet.',
         icon: GlobeAltIcon,
     },
     {
         name: 'Fair price',
         description:
-            'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores impedit perferendis suscipit eaque, iste dolor cupiditate blanditiis ratione.',
+            'Our free plans are basically enough to satisfy most of our clients.\n' +
+            'At the same time we offer paid plans in a very cost effective way',
         icon: ScaleIcon,
     },
     {
         name: 'Fast network',
         description:
-            'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores impedit perferendis suscipit eaque, iste dolor cupiditate blanditiis ratione.',
+            'High-speed network, fast, very fast, ultra-fast access to server nodes',
         icon: BoltIcon,
     },
     {
@@ -46,7 +47,7 @@ defineProps({
             <div class="sm:text-center">
                 <h2 class="text-lg font-semibold leading-8 text-indigo-600">TunnelBroker</h2>
                 <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">A better open source TunnelBroker project</p>
-                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">.</p>
+                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">An open source, support for multiple access protocols, feature-rich TunnelBroker project.</p>
             </div>
 
             <div class="mt-20 max-w-lg sm:mx-auto md:max-w-none">

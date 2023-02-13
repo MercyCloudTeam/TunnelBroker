@@ -47,7 +47,7 @@ class CreateNewUser implements CreatesNewUsers
         $user->userPlan()->create([
             'plan_id' => $plan->id,
             'expire_at' => now()->addYears(10),
-            'reset_time' => now()->addMonth(),
+            'reset_day' => now()->day,
         ]);
 
         DB::commit();
@@ -61,7 +61,7 @@ class CreateNewUser implements CreatesNewUsers
     public function userPlan()
     {
         $defaultPlanId = env('DEFAULT_PLAN_ID');
-        if (empty($defaultPlanId)) {
+        if (!isset($defaultPlanId)) {
             throw new Exception('Please set DEFAULT_PLAN_ID in .env file');
         }
         $defaultPlan = Plan::where('id', $defaultPlanId)->first();
@@ -71,12 +71,13 @@ class CreateNewUser implements CreatesNewUsers
                 'name' => 'Free',
                 'slug' => 'free',
                 'description' => 'Free Plan',
+                'limit' => env('INITIAL_PLAN_LIMIT', 5),
                 'ipv4_num' => env('INITIAL_PLAN_IPV4', 5),
                 'ipv6_num' => env('INITIAL_PLAN_IPV6', 5),
-                'limit' => env('INITIAL_PLAN_TRAFFIC', 1024000),
-                'traffic' => 1000,
+                'traffic' => env('INITIAL_PLAN_SPEED', 107374182400),//bytes
+                'speed' => env('INITIAL_PLAN_SPEED', 1000),//bytes
             ]);
-        } else {
+        } elseif(empty($defaultPlan)) {
             throw new Exception('DEFAULT_PLAN_ID plan not found');
         }
         return $defaultPlan;

@@ -15,6 +15,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import SectionBorder from '@/Components/SectionBorder.vue';
 import TextInput from '@/Components/TextInput.vue';
+import Swal from "sweetalert2";
 
 const props = defineProps({
     nodes: Array,
@@ -31,10 +32,21 @@ const createTunnel = () => {
             createTunnelForm.reset();
             displayPubKeyInput.value = false;
             displayPortInput.value = false;
-
+            Swal.fire({
+                icon: 'success',
+                title: 'Tunnel created',
+                text: 'Tunnel created successfully, places wait 1 minute for the tunnel to be created',
+            })
         },
         onError: () => {
-            console.log(createTunnelForm.errors.createTunnel.remote);
+            if (createTunnelForm.errors.tunnel)
+            {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: createTunnelForm.errors.tunnel,
+                })
+            }
         },
     });
 }
@@ -47,7 +59,6 @@ const displayIpAssignInput = ref({
 });
 
 
-
 const createTunnelForm = useForm({
     remote: '',
     mode: '',
@@ -57,7 +68,7 @@ const createTunnelForm = useForm({
 })
 
 const modeChange = () => {
-    console.log(createTunnelForm.mode);
+    // console.log(createTunnelForm.mode);
     switch (createTunnelForm.mode){
         case 'wireguard':
             createTunnelForm.port = null;

@@ -75,6 +75,9 @@ class TunnelIP implements Rule
         }
 
         $node =  Node::find($this->node_id);
+        if ($node === null){
+            return false;//节点不存在
+        }
         if ($value === $node->ip || $value === $node->ip6){
             return false;//不能是本节点IP
         }

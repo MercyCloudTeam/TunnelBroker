@@ -12,7 +12,7 @@ class Plan extends Model
     protected $table = 'plans';
 
     protected $fillable = [
-        'name','slug','data','description','limit','ipv6_num','ipv4_num','bandwidth','traffic'
+        'name','slug','data','description','limit','ipv6_num','ipv4_num','speed','traffic'
     ];
 
     protected $casts = [

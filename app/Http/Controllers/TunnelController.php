@@ -205,7 +205,7 @@ class TunnelController extends Controller
                 ]);
             }
         }
-        if ($user->tunnels->count() > env('DEFAULT_USER_LIMIT')) {
+        if ($user->tunnels->count() >= env('DEFAULT_USER_LIMIT')) {
             return throw ValidationException::withMessages([
                 'tunnel' => ["You've created too many Tunnels"],
             ]);
