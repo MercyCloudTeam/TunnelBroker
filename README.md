@@ -4,6 +4,36 @@
 
 </p>
 
+~~~
+
+2023.2.14 更新
+
+更新至 Laravel 9
+更新至 Vue3
+添加 Wireguard & GRE & IPIP & VXLAN 隧道支持
+添加 流量记录
+优化 任务执行（简化Job、提高连接效率、sudo方式执行命令）
+数据库设计变更
+
+---
+
+因为Laravel9和Vue3等大版本更新，导致BGP功能暂时不可用。Tunnel功能可正常使用。
+
+"因为数据库变更及部分功能暂时不可用，官方（演示）站将进行“大版本更新（时间未定）”，
+原本用户的BGP Tunnel暂不可用，且可能需要重置密码（结构更新导致）。"
+
+---
+
+接下来更新将修复及新增功能:
+
+自动化BGP Tunnel
+ASN自动验证
+AS-SET自动更新
+BGP会话状态监测
+Tunnel流量记录显示
+
+~~~
+
 ## 关于本项目 
 
 使用Laravel框架及生态开发出来的Tunnel Broker（隧道中间人）面板
@@ -33,7 +63,9 @@
 ## 功能
 
 * 用户系统（基础的用户系统 【注册、登录、个人中心】，不包含工单等功能）
-* 自动化配置Tunnel
+* 自动化配置 Wireguard SIT GRE IPIP VXLAN ... Tunnel 
+
+（2023.2.14更新后、功能暂不可用，如需使用请切换到旧版本）
 * FRRouting路由器 BGP自动化配置
 * AS-SET自动更新（基于RIPE NCC RESTful API）
 * ASN自动验证（仅限注册邮箱为ASN维护者邮箱时）
@@ -42,16 +74,15 @@
 
 TunnelBroker.io
 
-TunnelBrokerIO是一个公益项目，由赞助商提供资源支持，[NGUnion](https://ngunion.com)负责维护及技术支持。
+TunnelBrokerIO是一个公益项目，由赞助商提供资源支持，MercyCloud&NGUnion负责维护及技术支持。
 
 ## 赞助商
 
 * [OLVPS](https://olvps.com/cart.php)(AS59598)
 * [MercyCloud](https://www.mercycloud.com/)(AS9886)
-* [Sakura Network]
+* [Sakura Network](https://sakura.as/)(AS9516)
 
-
-
+咱们正在寻找赞助商，如果你有兴趣支持本项目，欢迎联系咱们。
 
 > 维护本项目需要更多的人员、资源、如果您有兴趣提供赞助通过邮件、其他方式联系咱们。
 
@@ -119,6 +150,10 @@ ZONE_NAME=tunnel.mercycloud.com.
 NOC:  noc@mercycloud.com （网络问题）
 
 > 这是一个开源项目，咱们回复时效可能会较长，请不要频繁发件催促及垃圾邮件。这些邮箱对咱们日常运营非常重要、Thanks
+
+Telegram: [MercyCloud Channel(运营频道)](https://t.me/MercyCloudTips) | [NGUnion Channel(开发频道)](https://t.me/NGUnion) | [YFsama(开发者)](https://t.me/YFsama)
+
+Discord: [MercyCloud](https://discord.gg/N8tv9Rb2Yj)
 
 ## 许可证 License
 
