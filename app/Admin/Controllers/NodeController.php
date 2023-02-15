@@ -26,6 +26,7 @@ class NodeController extends AdminController
 //           dd( $grid->getVisibleColumnNames());
             $grid->column('id')->sortable();
             $grid->column('ip');
+            $grid->column('county');
             $grid->column('ip6');
             $grid->column('port');
             $grid->column('status');
@@ -83,6 +84,8 @@ class NodeController extends AdminController
             $form->text('username')->default('root')->value($form->model()->username);;
             $form->select('login_type')->options(config('status.node.login_type'))->default('password')->value($form->model()->login_type);
             $form->password('password')->value($form->model()->password);
+
+            $form->text('county');
 
             $form->number('port')->max(65535)->min(1)->default(22)->value($form->model()->port);;
             $form->select('status')->options(config('status.node.status'))->default(1);

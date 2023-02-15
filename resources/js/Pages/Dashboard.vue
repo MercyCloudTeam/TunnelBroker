@@ -5,8 +5,18 @@ import { PaperClipIcon } from '@heroicons/vue/20/solid'
 defineProps({
     my: Array,
     plan: Array,
+    userPlan: Array,
+    usage: Array,
 });
 
+
+const humanTrafficDisplay = (bytes) => {
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+    if (bytes === 0) return '0 Byte'
+    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10)
+    if (i === 0) return `${bytes} ${sizes[i]}`
+    return `${(bytes / (1024 ** i)).toFixed(1)} ${sizes[i]}`
+}
 
 </script>
 
@@ -30,28 +40,40 @@ defineProps({
                             <dl>
                                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                     <dt class="text-sm font-medium text-gray-500">Plan</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{plan.name}}</dd>
+                                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{plan.name}} ({{plan.slug}})</dd>
                                 </div>
                                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                    <dt class="text-sm font-medium text-gray-500">Limit</dt>
+                                    <dt class="text-sm font-medium text-gray-500">Plan Traffic</dt>
                                     <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-<!--                                        IPV4 Num: {{plan.ipv4_num}} , IPV6 Num: {{plan.ipv6_num}}-->
+                                        {{humanTrafficDisplay(plan.traffic)}}
                                     </dd>
                                 </div>
-                                <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                    <dt class="text-sm font-medium text-gray-500">Tunnels</dt>
+                                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt class="text-sm font-medium text-gray-500">Usage</dt>
                                     <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                        <ul role="list" class="divide-y divide-gray-200 rounded-md border border-gray-200">
-                                            <li class="flex items-center justify-between py-3 pl-3 pr-4 text-sm">
-                                                <div class="flex w-0 flex-1 items-center">
-                                                    <span class="ml-2 w-0 flex-1 truncate">rf</span>
-                                                </div>
-                                                <div class="ml-4 flex-shrink-0">
-                                                    <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Detail</a>
-                                                </div>
-                                            </li>
-
-                                        </ul>
+                                        {{humanTrafficDisplay(usage.total)}}
+                                    </dd>
+                                </div>
+                                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt class="text-sm font-medium text-gray-500">Reset Day</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">The {{userPlan.reset_day}}th day of each month</dd>
+                                </div>
+                                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt class="text-sm font-medium text-gray-500">IPV4 Address Limit</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                                        {{usage.ipv4}} / {{plan.ipv4_num}}
+                                    </dd>
+                                </div>
+                                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt class="text-sm font-medium text-gray-500">IPV6 Address Limit</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                                        {{usage.ipv6}} / {{plan.ipv6_num}}
+                                    </dd>
+                                </div>
+                                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt class="text-sm font-medium text-gray-500">Tunnel Limit</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                                        {{usage.tunnel}} / {{plan.limit}}
                                     </dd>
                                 </div>
                             </dl>

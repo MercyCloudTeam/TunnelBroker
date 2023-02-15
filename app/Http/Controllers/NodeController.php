@@ -121,7 +121,7 @@ class NodeController extends Controller
      */
     public function updateTraffic(Tunnel $tunnel, int $in, int $out)
     {
-        $cacheName = "$tunnel-traffic";
+        $cacheName = "$tunnel->interface-traffic";
         $cacheTraffic = json_decode(Cache::get($cacheName), true);
         if (empty($cacheTraffic) || $cacheTraffic['in'] > $in || $cacheTraffic['out'] > $out) {
             //缓存比获取到的大则表面网卡被重启过(那么未捕获到的流量就不计算了)
@@ -135,14 +135,16 @@ class NodeController extends Controller
                 'last_time' => time()
             ];
         } else {
+            $useTrafficIn = $in - $cacheTraffic['in'];
+            $useTrafficOut = $out - $cacheTraffic['out'];
+
             $cacheTraffic = array_merge($cacheTraffic, [
                 'in' => $in,
                 'out' => $out,
                 'last_time' => time()
             ]);
 //            $startTime = $cacheTraffic['start_time'];
-            $useTrafficIn = $in - $cacheTraffic['in'];
-            $useTrafficOut = $out - $cacheTraffic['out'];
+
         }
         Cache::put($cacheName, json_encode($cacheTraffic));
 //        $startTime = Carbon::createFromTimestamp($startTime);
@@ -150,19 +152,20 @@ class NodeController extends Controller
         //get lastest tunnel traffic
         $tunnelTraffic = TunnelTraffic::where([
             ['tunnel_id', '=', $tunnel->id],
-            ['deadline', '>=', time()]
+            ['deadline', '>=', Carbon::now()]
         ])->latest()->first();
+
         if (empty($tunnelTraffic)) {
             //get user reset day
             $userPlan = $tunnel->user->userPlan;
             $resetDay = $userPlan->reset_day;
             TunnelTraffic::create([
                 'tunnel_id' => $tunnel->id,
-                'deadline' => Carbon::now()->addMonth()->day($resetDay),
-                'in'=>$useTrafficIn,
-                'out'=>$useTrafficOut,
+                'deadline' => Carbon::now()->addMonth()->day($resetDay)->hour(0)->minute(0)->second(0),
+                'in' => $useTrafficIn,
+                'out' => $useTrafficOut,
             ]);
-        }else{
+        } else {
             $tunnelTraffic->update([
                 'in' => $tunnelTraffic->in + $useTrafficIn,
                 'out' => $tunnelTraffic->out + $useTrafficOut,

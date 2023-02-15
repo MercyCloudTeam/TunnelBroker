@@ -111,6 +111,7 @@ const getStatusDisplay = (status) => {
                 </template>
 
                 <template #description>
+
                 </template>
 
                 <template #content>
@@ -204,21 +205,18 @@ const getStatusDisplay = (status) => {
             <template #content>
                 <div>
 
-                    <p>Remote Address: {{ detailTunnel.tunnel.remote }} </p>
-                    <p>IPV4 Address: {{ detailTunnel.tunnel.ip4 }}</p>
-                    <p>IPV6 Address: {{ detailTunnel.tunnel.ip6 }}</p>
-                    <p>Server Port: {{ detailTunnel.tunnel.srcport }}</p>
-                    <p>Local Port: {{ detailTunnel.tunnel.dstport }}</p>
+                    <p> Remote Address: {{ detailTunnel.tunnel.remote }} </p>
                     <p>Protocol: {{ detailTunnel.tunnel.mode }}</p>
                     <p>Status: <span
                         :class="getStatusDisplay(detailTunnel.tunnel.status).class">{{ getStatusDisplay(detailTunnel.tunnel.status).text }}</span>
                     </p>
+                    <p>IPV4 Address: {{ detailTunnel.tunnel.ip4}}</p>
+                    <p>IPV6 Address: {{ detailTunnel.tunnel.ip6}}</p>
                     <p>Created At: {{ detailTunnel.tunnel.created_at }}</p>
                     <div v-if="detailTunnel.tunnel.config">
-                        <p v-if="detailTunnel.tunnel.config.local.pubkey">Local Public Key: {{detailTunnel.tunnel.config.remote.pubkey}}</p>
-<!--                        <p v-if="detailTunnel.tunnel.config.local.privkey">Local Privacy Key: {{detailTunnel.tunnel.config.local.privkey}}</p>-->
-                        <p v-if="detailTunnel.tunnel.config.remote.pubkey">Local Privacy Key: {{detailTunnel.tunnel.config.remote.privkey}}</p>
-                        <p v-if="detailTunnel.tunnel.config.local.pubkey">Server Public Key: {{detailTunnel.tunnel.config.local.pubkey}}</p>
+                        <p v-if="detailTunnel.tunnel.config.local.pubkey">Local Public Key: {{detailTunnel.tunnel.config.local.pubkey}}</p>
+                        <p v-if="detailTunnel.tunnel.config.local.privkey">Local Privacy Key: {{detailTunnel.tunnel.config.local.privkey}}</p>
+                        <p v-if="detailTunnel.tunnel.config.remote.pubkey">Server Public Key: {{detailTunnel.tunnel.config.remote.pubkey}}</p>
                     </div>
                 </div>
             </template>

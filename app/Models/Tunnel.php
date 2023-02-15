@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\TunnelController;
 use Dcat\Admin\Traits\HasDateTimeFormatter;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +33,10 @@ class Tunnel extends Model
         'rdns', 'srcport', 'dstport', 'in', 'out', 'config', 'user_id', 'node_id'
     ];
 
+    protected $appends = [
+        'traffic_cycle'
+    ];
+
     public function local(): Attribute
     {
         return Attribute::make(
@@ -46,6 +51,36 @@ class Tunnel extends Model
         );
     }
 
+    public function trafficCycle(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                //Get All Traffic
+                $traffic = TunnelTraffic::where([
+                    ['tunnel_id', '=', $this->id],
+                ])->latest()->first();
+                //Sum
+                if (empty($traffic)){
+                    return [
+                        'in' => 0,
+                        'in_ht' => "N/A",
+                        'out' => 0,
+                        'out_ht' => "N/A",
+                        'deadline' => 0,
+                    ];
+                }
+                return [
+                    'in' => $traffic->in,
+                    'in_ht' => TunnelController::ht($traffic->in),
+                    'out' => $traffic->out,
+                    'out_ht' => TunnelController::ht($traffic->out),
+                    'deadline' => $traffic->deadline,
+                    'created_at' => $traffic->created_at,
+                ];
+            }
+        );
+    }
+
     public function node()
     {
         return $this->belongsTo('App\Models\Node');
@@ -54,11 +89,6 @@ class Tunnel extends Model
     public function user()
     {
         return $this->belongsTo('App\Models\User');
-    }
-
-    public function asn()
-    {
-        return $this->hasOne('App\Models\ASN', 'id', 'asn_id');
     }
 
     public function ips()
@@ -70,6 +100,7 @@ class Tunnel extends Model
     {
         return $this->hasMany('App\Models\TunnelTraffic', 'tunnel_id', 'id');
     }
+
 
     public function trafficSum(): Attribute
     {

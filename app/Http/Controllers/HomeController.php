@@ -13,9 +13,15 @@ class HomeController extends Controller
     public function dashboard()
     {
         $user = Auth::user();
-        return Inertia::render('Dashboard',[
-            'my'=>$user,
-            'plan'=>$user->plan,
+        $userController = new UserController();
+        $trafficUsage = $userController->getTrfficUsage($user);
+        $ipAddressUsage = $userController->getIpAddressUsage($user);
+        $usage = array_merge($trafficUsage, $ipAddressUsage, ['tunnel' => $user->tunnels->count()]);
+        return Inertia::render('Dashboard', [
+            'my' => $user,
+            'plan' => $user->plan,
+            'userPlan' => $user->userPlan,
+            'usage' => $usage
         ]);
     }
 
@@ -25,7 +31,7 @@ class HomeController extends Controller
         return Inertia::render('Welcome', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
-            'nodes'=> $nodes
+            'nodes' => $nodes
         ]);
     }
 }

@@ -82,4 +82,13 @@ class User extends Authenticatable implements Auditable
         return $this->hasOne(UserPlan::class, 'user_id', 'id');
     }
 
+    public function asn()
+    {
+        return $this->hasMany(ASN::class);
+    }
+
+    public function ipAllocation()
+    {
+        return $this->hasManyThrough(IPAllocation::class, Tunnel::class, 'user_id', 'tunnel_id', 'id', 'id');
+    }
 }

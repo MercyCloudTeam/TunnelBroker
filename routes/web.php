@@ -29,11 +29,15 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', [HomeController::class,'dashboard'])->name('dashboard');
-
     Route::resource('/tunnels', TunnelController::class)->except([
         'create', 'edit'
     ]);
-
-    Route::get('/validate/asn',[ASNController::class,'index'])->name('bgp.validate');//验证ASN
+    Route::resource('/asn', ASNController::class)->except([
+        'create', 'edit'
+    ]);
+//    Route::resource('/asn', FRR::class)->except([
+//        'create', 'edit'
+//    ]);
+//    Route::get('/validate/asn',[ASNController::class,'index'])->name('bgp.validate');//验证ASN
     Route::post('/validate/asn',[ASNController::class,'store']);
 });

@@ -15,7 +15,8 @@ class Node extends Model
 
     protected $fillable = [
         'ip','title','username','password','login_type','port',
-        'status','limit','config','public_ip','ip6','public_ip6'
+        'status','limit','config','public_ip','ip6','public_ip6',
+        'county'
     ];
 
     protected $hidden = [

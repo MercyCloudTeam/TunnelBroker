@@ -3,6 +3,8 @@ import { Head, Link } from '@inertiajs/inertia-vue3';
 import Header from "@/Components/Header.vue";
 import NodeCard from "@/Components/NodeCard.vue";
 import { BoltIcon, CubeIcon, GlobeAltIcon, ScaleIcon } from '@heroicons/vue/24/outline'
+import CountryFlag from 'vue-country-flag-next'
+
 const features = [
     {
         name: 'Global Nodes',

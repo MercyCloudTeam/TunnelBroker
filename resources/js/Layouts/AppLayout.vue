@@ -58,6 +58,21 @@ const logout = () => {
                                     Tunnels
                                 </NavLink>
                             </div>
+                            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                                <NavLink :href="route('tunnels.index')" :active="route().current('tunnels')">
+                                    BGP
+                                </NavLink>
+                            </div>
+                            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                                <NavLink :href="route('asn.index')" :active="route().current('asn')">
+                                    ASN
+                                </NavLink>
+                            </div>
+                            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                                <NavLink :href="route('asn.index')" :active="route().current('asn')">
+                                    Plan
+                                </NavLink>
+                            </div>
                         </div>
 
                         <div class="hidden sm:flex sm:items-center sm:ml-6">

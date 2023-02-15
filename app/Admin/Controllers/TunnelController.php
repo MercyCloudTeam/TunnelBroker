@@ -28,16 +28,22 @@ class TunnelController extends AdminController
             $grid->column('mode');
             $grid->column('local');
             $grid->column('remote');
-            $grid->column('ip4')->display(function ($ip4) {
-                return $ip4.$this->ip4_cidr;
+            $grid->column('ip4','IPV4 Address')->display(function ($ip4) {
+                if (!empty($ip4)){
+                    return $ip4.$this->ip4_cidr;
+                }
+                return null;
             });
-            $grid->column('ip6')->display(function ($ip4) {
-                return $ip4.$this->ip6_cidr;
-            });;
+            $grid->column('ip6','IPV6 Address')->display(function ($ip6) {
+                if (!empty($ip6)){
+                    return $ip6.$this->ip6_cidr;
+                }
+                return null;
+            });
             $grid->column('status');
-            $grid->column('node.title');
+            $grid->column('node.title','Node');
             $grid->column('interface');
-            $grid->column('srcport');
+//            $grid->column('srcport');
             $grid->column('dstport');
 //            $grid->column('in')->display(function ($v){
 //                return \App\Http\Controllers\TunnelController::hbw($v);
@@ -105,7 +111,7 @@ class TunnelController extends AdminController
     {
         return Form::make(new Tunnel(), function (Form $form) {
             $form->display('id');
-            $form->select('mode')->options(config('status.tunnel.type'))->default('sit');
+            $form->select('mode')->options(array_combine(\App\Http\Controllers\TunnelController::$availableModes,\App\Http\Controllers\TunnelController::$availableModes))->default('sit');
             $form->text('local')->help('默认使用节点IP，当需要使用本地指定IP的时候配置');
             $form->text('remote')->required();
             $form->select('status')->options(config('status.tunnel.status'))->default(2)->required();
@@ -122,29 +128,21 @@ class TunnelController extends AdminController
             $form->text('interface');
             $form->number('srcport')->min(0)->max(65535);
             $form->number('dstport')->min(0)->max(65535);
-            $form->display('in');
-            $form->display('out');
-            $form->text('config');
+//            dd(json_encode($form->model()->config));
+//            $form->text('config')->value(json_encode($form->model()->config));
 //            $form->selectTable('');
             $form->selectTable('user_id')
                 ->title('选择用户')
                 ->required()
                 ->dialogWidth('50%') // 弹窗宽度，默认 800px
                 ->from(UserTable::make(['id' => $form->getKey()])) // 设置渲染类实例，并传递自定义参数
-                ->model(User::class, 'id', 'username'); // 设置编辑数据显示
+                ->model(User::class, 'id', 'name'); // 设置编辑数据显示
             $form->selectTable('node_id')
                 ->title('选择节点')
                 ->dialogWidth('50%') // 弹窗宽度，默认 800px
                 ->required()
                 ->from(NodeTable::make(['id' => $form->getKey()])) // 设置渲染类实例，并传递自定义参数
                 ->model(Node::class, 'id', 'title'); // 设置编辑数据显示
-            $form->selectTable('asn_id')
-                ->title('选择ASN')
-                ->dialogWidth('50%') // 弹窗宽度，默认 800px
-                ->from(ASNTable::make(['id' => $form->getKey()])) // 设置渲染类实例，并传递自定义参数
-                ->model(ASN::class, 'id', 'asn')
-            ->help('仅BGP Tunnel时需配置'); // 设置编辑数据显示
-
 
             $form->display('created_at');
             $form->display('updated_at');

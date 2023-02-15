@@ -53,7 +53,7 @@ class ASNController extends Controller
     public function index()
     {
         $user = Auth::user();
-        return Inertia::render('ASN/Validation',[
+        return Inertia::render('ASN/Index',[
             'asn'=>$user->asn
         ]);
     }
