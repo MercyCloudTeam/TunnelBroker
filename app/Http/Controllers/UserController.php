@@ -25,16 +25,16 @@ class UserController extends Controller
 
     public function getTrfficUsage(User $user)
     {
-        $tunnels = $user->tunnels->pluck('id');
+        $tunnelsTraffics = TunnelTraffic::where([
+            ['user_id', $user->id],
+            ['deadline', '>', now()],
+        ])->get();
+//        $tunnels = $user->tunnels->pluck('id');
         $in = 0;
         $out = 0;
         $total = 0;
-        foreach ($tunnels as $id)
+        foreach ($tunnelsTraffics as $traffic)
         {
-            $traffic = TunnelTraffic::where([
-                ['tunnel_id', '=', $id],
-                ['deadline', '>', now()],
-            ])->latest()->first();
             if (!empty($traffic)){
                 $in += $traffic->in;
                 $out += $traffic->out;

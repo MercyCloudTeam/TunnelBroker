@@ -1,6 +1,8 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import TunnelManager from "@/Pages/Tunnels/Partials/TunnelManager.vue";
+import List from "@/Pages/ASN/Partials/List.vue";
+import Add from "@/Pages/ASN/Partials/Add.vue";
 
 defineProps({
     asn: Array,
@@ -20,11 +22,11 @@ defineProps({
         <div>
             <div v-if="asn.length > 0">
                 <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-<!--                    <List :tunnels="asn"/>-->
+<!--                    <List :asn="asn"/>-->
                 </div>
             </div>
             <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-<!--                <TunnelManager  :tunnels="tunnels" :available-mode="availableMode" :nodes="nodes" ></TunnelManager>-->
+                <Add />
             </div>
         </div>
     </AppLayout>

@@ -43,15 +43,15 @@ const humanTrafficDisplay = (bytes) => {
                                     <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{plan.name}} ({{plan.slug}})</dd>
                                 </div>
                                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                    <dt class="text-sm font-medium text-gray-500">Plan Traffic</dt>
+                                    <dt class="text-sm font-medium text-gray-500">Plan Traffic Usage</dt>
                                     <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                        {{humanTrafficDisplay(plan.traffic)}}
+                                        {{humanTrafficDisplay(usage.total)}} / {{humanTrafficDisplay(plan.traffic)}}
                                     </dd>
                                 </div>
                                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                    <dt class="text-sm font-medium text-gray-500">Usage</dt>
+                                    <dt class="text-sm font-medium text-gray-500">Plan Speed Limit</dt>
                                     <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                        {{humanTrafficDisplay(usage.total)}}
+                                        {{plan.speed}} Mbits/s
                                     </dd>
                                 </div>
                                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

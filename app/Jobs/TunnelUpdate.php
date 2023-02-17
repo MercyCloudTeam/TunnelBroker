@@ -78,6 +78,9 @@ class TunnelUpdate implements ShouldQueue
                     case 6:
                         $this->tunnelController->createTunnel($this->connect,$tunnel);
                         break;
+                    case 3:
+                        $this->tunnelController->rebuildTunnel($this->connect,$tunnel);
+                        break;
                     case 5:
                         $this->tunnelController->changeTunnelIP($this->connect,$tunnel);
                         break;

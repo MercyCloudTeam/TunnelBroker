@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use IPTools\Network;
+use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Net\SSH2;
 use Throwable;
 
@@ -42,8 +43,8 @@ class NodeController extends Controller
                 $ssh->login($node->username, $node->password);
                 break;
             case "rsa":
-                //Todo RSA登录
-//                $ssh->login($node->username,new Crypt)
+                $key = PublicKeyLoader::load($node->password);
+                $ssh->login($node->username,$key);
                 break;
         }
         if ($ssh->isAuthenticated() && $ssh->isConnected()) {
@@ -93,25 +94,6 @@ class NodeController extends Controller
         }
     }
 
-//    protected function cacheTraffic($name, $traffic, $old)
-//    {
-//        //如果网卡重启的过快或次数过多则无法记录该时间段的流量
-//        if (Cache::has($name)) {//存在
-//            $cache = Cache::get($name);
-//            if ($cache > $traffic) {//缓存的流量比获取的流量的话则代表网卡重启过
-//                //将已经缓存的流量计入
-//                Cache::put($name, $traffic);
-//                return bcadd($old, $cache);
-//            } elseif ($cache < $traffic) {//流量不变的情况下无需更新
-//                Cache::put($name, $traffic);
-//                //将更新流量计入
-//                return bcadd($old, bcsub($traffic, $cache));
-//            }
-//        } else {
-//            Cache::put($name, $traffic);
-//        }
-//        return $old;//没有则返回原本
-//    }
 
     /**
      * @param Tunnel $tunnel
@@ -160,6 +142,7 @@ class NodeController extends Controller
             $userPlan = $tunnel->user->userPlan;
             $resetDay = $userPlan->reset_day;
             TunnelTraffic::create([
+                'user_id' => $tunnel->user->id,
                 'tunnel_id' => $tunnel->id,
                 'deadline' => Carbon::now()->addMonth()->day($resetDay)->hour(0)->minute(0)->second(0),
                 'in' => $useTrafficIn,

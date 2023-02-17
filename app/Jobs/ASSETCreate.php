@@ -37,7 +37,7 @@ class ASSETCreate implements ShouldQueue
             $ripe = new RIPEController();
             ASN::where('validate',true)->chunk(50,function ($asn){
                 foreach ($asn as $item){
-                    $list[] = "AS{$item->asn}";
+                    $list[] = "AS$item->asn";
                 }
                 if (isset($list)){
                     $this->values[] = implode(", ",$list);

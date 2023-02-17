@@ -17,41 +17,21 @@ import {useForm} from "@inertiajs/inertia-vue3";
 import Swal from "sweetalert2";
 
 defineProps({
-    tunnels: Array,
+    asn: Array,
 })
 
 
-const confirmTunnelDeletionModal = ref(false);
-const displayTunnelInfoModal = ref(false);
+const confirmASNDeletionModal = ref(false);
+const displayASNInfoModal = ref(false);
 
 const confirmTunnelDeletion = (tunnel) => {
-    confirmTunnelDeletionModal.value = true;
+    confirmASNDeletionModal.value = true;
     delTunnelForm.tunnel = tunnel;
 }
 
 const displayTunnelInfo = (tunnel) => {
-    displayTunnelInfoModal.value = true;
+    displayASNInfoModal.value = true;
     detailTunnel.tunnel = tunnel;
-}
-
-const deleteTunnel = () => {
-    confirmTunnelDeletionModal.value = false;
-    delTunnelForm.delete(route('tunnels.destroy', delTunnelForm.tunnel.id), {
-        preserveScroll: true,
-        errorBag: 'deleteTunnel',
-        onSuccess: () => {
-            delTunnelForm.reset();
-            Swal.fire({
-                icon: 'success',
-                title: 'Tunnel deleted',
-                text: 'Tunnel deleted successfully,Tunnel will be deleted in 1 minute',
-            })
-        },
-        onError: () => {
-            console.log(delTunnelForm.errors.deleteTunnel);
-        },
-    });
-
 }
 
 const delTunnelForm = useForm({
@@ -62,40 +42,6 @@ const detailTunnel = useForm({
     tunnel: null,
 })
 
-const getStatusDisplay = (status) => {
-    switch (status) {
-        case 1:
-            return {
-                'class': 'text-green-600',
-                'text': 'Active'
-            };
-        case 2:
-            return {
-                'class': 'text-yellow-600',
-                'text': 'Waiting Create'
-            };
-        case 4:
-            return {
-                'class': 'text-yellow-600',
-                'text': 'Create Error(Waiting Retry)'
-            }
-        case 5:
-            return {
-                'class': 'text-red-600',
-                'text': 'IP Changed'
-            };
-        case 6:
-            return {
-                'class': 'text-red-600',
-                'text': 'Error'
-            };
-        case 7:
-            return {
-                'class': 'text-red-600',
-                'text': 'Deleting'
-            };
-    }
-}
 
 </script>
 
@@ -149,22 +95,17 @@ const getStatusDisplay = (status) => {
                             </thead>
 
                             <tbody class="divide-y divide-gray-200">
-                            <tr v-for="tunnel in tunnels" :key="tunnel.id">
+                            <tr v-for="item in asn" :key="item.id">
                                 <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-                                    {{ tunnel.id }}
+                                    {{ item.id }}
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ tunnel.remote }}</td>
-                                <td class="whitespace-nowrap px-4 py-2" :class="getStatusDisplay(tunnel.status).class">
-                                    {{ getStatusDisplay(tunnel.status).text }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-2 text-gray-700"> {{ tunnel.mode }}</td>
                                 <td class="whitespace-nowrap px-4 py-2 text-right">
                                     <button class="cursor-pointer ml-6 text-sm text-blue-500"
-                                            @click="displayTunnelInfo(tunnel)">
+                                            @click="displayTunnelInfo(item)">
                                         Detail
                                     </button>
-                                    <button v-if="tunnel.status !== 7" class="cursor-pointer ml-6 text-sm text-red-500"
-                                            @click="confirmTunnelDeletion(tunnel)">
+                                    <button v-if="item.status !== 7" class="cursor-pointer ml-6 text-sm text-red-500"
+                                            @click="confirmTunnelDeletion(item)">
                                         Delete
                                     </button>
                                 </td>
@@ -176,7 +117,7 @@ const getStatusDisplay = (status) => {
             </ActionSection>
         </div>
 
-        <DialogModal :show="confirmTunnelDeletionModal" @close="confirmTunnelDeletionModal = false">
+        <DialogModal :show="confirmASNDeletionModal" @close="confirmASNDeletionModal = false">
             <template #title>
                 Remove Tunnel
             </template>
@@ -191,13 +132,13 @@ const getStatusDisplay = (status) => {
                 <PrimaryButton @click="deleteTunnel">
                     Remove
                 </PrimaryButton>
-                <SecondaryButton @click="confirmTunnelDeletionModal = false">
+                <SecondaryButton @click="confirmASNDeletionModal = false">
                     Close
                 </SecondaryButton>
             </template>
         </DialogModal>
 
-        <DialogModal :show="displayTunnelInfoModal" @close="displayTunnelInfoModal = false">
+        <DialogModal :show="displayASNInfoModal" @close="displayASNInfoModal = false">
             <template #title>
                 Tunnel #{{ detailTunnel.tunnel.id }}
             </template>
@@ -222,7 +163,7 @@ const getStatusDisplay = (status) => {
             </template>
 
             <template #footer>
-                <SecondaryButton @click="displayTunnelInfoModal = false">
+                <SecondaryButton @click="displayASNInfoModal = false">
                     Close
                 </SecondaryButton>
             </template>

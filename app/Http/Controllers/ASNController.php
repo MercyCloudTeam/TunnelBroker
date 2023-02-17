@@ -69,31 +69,33 @@ class ASNController extends Controller
         //TODO 其他验证方式支持
         $user = Auth::user();
         Validator::make($request->toArray(), [
-            'asn' => ['required', 'integer',Rule::unique('asn')->where(function ($query){
-            return $query->where('validate', true);
-//                $asn = ASN::where('asn',$query)->get();
-//                if (!$asn->isEmpty()){
-//                    if (!$asn->validate){//如果是未验证的asn可以忽略已经存在
-//                        return true;
-//                    }
-//                }
-//                return false;
-            }),'max:2147483647','min:1'],
-        ])->validateWithBag('createASN');
+            'asn' => [
+                'required',
+                'integer',
+                Rule::unique('asn')->where(function ($query){
+                    return $query->where('validate', true);
+                }),
+                'max:2147483647',
+                'min:1'
+            ],
+        ])->validateWithBag('storeASN');
 
         if ($user->asn->count() > 5){
             //无事发生,一个账户绑定大于5个ASN是想干嘛
-            return Redirect::route('bgp.validate')->with('success', 'Add ASN Success');
+            throw ValidationException::withMessages([
+                'storeASN' => ['You can only bind 5 ASN'],
+            ]);
         }
         $emails = $this->getASNEmail($request->asn);
         $validate = 0;
+
         if (!empty($emails) && is_array($emails) && in_array(strtolower($user->email),$emails) && isset($user->email_verified_at)){
             //用户注册时候的邮箱和ASN管理员邮箱一致 自动通过验证
             $validate=1;
             $email = $user->email;
             $email_verified_at = $user->email_verified_at;
             //通过认证则请求RIPE更新AS-SET
-            ASSETCreate::dispatch();
+//            ASSETCreate::dispatch();
         }
 
         ASN::updateOrInsert([

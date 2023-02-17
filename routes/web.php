@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ASNController;
+use App\Http\Controllers\BGPController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\TunnelController;
@@ -29,15 +30,19 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', [HomeController::class,'dashboard'])->name('dashboard');
+
     Route::resource('/tunnels', TunnelController::class)->except([
         'create', 'edit'
     ]);
     Route::resource('/asn', ASNController::class)->except([
         'create', 'edit'
     ]);
+    Route::resource('/bgp', BGPController::class)->except([
+        'create', 'edit'
+    ]);
 //    Route::resource('/asn', FRR::class)->except([
 //        'create', 'edit'
 //    ]);
 //    Route::get('/validate/asn',[ASNController::class,'index'])->name('bgp.validate');//验证ASN
-    Route::post('/validate/asn',[ASNController::class,'store']);
+    Route::post('/validate/asn',[ASNController::class,'store'])->name('asn.validate');//验证ASN
 });

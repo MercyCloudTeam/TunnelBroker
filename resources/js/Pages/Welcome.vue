@@ -72,5 +72,9 @@ defineProps({
             <NodeCard v-for="node in nodes" :key="node.id" :node="node" />
         </div>
     </div>
-
+    <footer class="footer footer-center p-4 bg-white text-base-content">
+        <div>
+            <p>Copyright © 2023 - All right reserved by TunnelBroker</p>
+        </div>
+    </footer>
 </template>

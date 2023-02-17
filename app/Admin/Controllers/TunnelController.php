@@ -26,17 +26,16 @@ class TunnelController extends AdminController
         return Grid::make(new Tunnel(['node']), function (Grid $grid) {
             $grid->column('id')->sortable();
             $grid->column('mode');
-            $grid->column('local');
             $grid->column('remote');
             $grid->column('ip4','IPV4 Address')->display(function ($ip4) {
                 if (!empty($ip4)){
-                    return $ip4.$this->ip4_cidr;
+                    return $ip4."/".$this->ip4_cidr;
                 }
                 return null;
             });
             $grid->column('ip6','IPV6 Address')->display(function ($ip6) {
                 if (!empty($ip6)){
-                    return $ip6.$this->ip6_cidr;
+                    return $ip6."/".$this->ip6_cidr;
                 }
                 return null;
             });

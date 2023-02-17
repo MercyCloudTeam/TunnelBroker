@@ -4,7 +4,7 @@ import TunnelManager from "@/Pages/Tunnels/Partials/TunnelManager.vue";
 
 defineProps({
     asn: Array,
-    nodes: Array,
+    tunnels: Array,
     availableMode: Array,
 });
 </script>

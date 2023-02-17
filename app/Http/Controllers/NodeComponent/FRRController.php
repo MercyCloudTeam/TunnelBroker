@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Http\Controllers\Route;
+namespace App\Http\Controllers\NodeComponent;
 
-use App\Http\Controllers\Controller;
 use App\Models\Tunnel;
 use IPTools\Network;
 
-class FRRController extends Controller
+class FRRController extends NodeComponentBaseController
 {
+
+    public array $configure = [
+        'asn'
+    ];
 
     /**
      * 配置起手式
@@ -17,7 +20,7 @@ class FRRController extends Controller
     public function commandBGP($nodeASN): string
     {
         return "sudo vtysh -c \" conf t
-        router bgp {$nodeASN}
+        router bgp $nodeASN
         ";
     }
 
@@ -32,11 +35,11 @@ class FRRController extends Controller
         $command = $this->commandBGP($tunnel->node->asn);
         if (isset($tunnel->ip4)){
             $ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
-            $command .= "no nei {$ip4}";
+            $command .= "no nei $ip4";
         }
         if(isset($tunnel->ip6)){
             $ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next()->next();
-            $command .= "no nei {$ip6}";
+            $command .= "no nei $ip6";
         }
         $command .= "\"";
         return $command;
@@ -60,33 +63,33 @@ class FRRController extends Controller
             $v4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
             $updateSource = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next();
             $command .= "
-            no nei {$v4}
-            nei {$v4} remote-as {$asn->asn}
-            nei {$v4} update-source {$updateSource}
+            no nei $v4
+            nei $v4 remote-as $asn->asn
+            nei $v4 update-source $updateSource
             add ipv4
-            nei {$v4} maximum-prefix {$asn->limit} restart 30
-            nei {$v4} route-map {$inRouteMap} in
-            nei {$v4} route-map {$outRouteMap} out
-            nei {$v4} soft-reconfiguration inbound
-            nei {$v4} act
+            nei $v4 maximum-prefix $asn->limit restart 30
+            nei $v4 route-map $inRouteMap in
+            nei $v4 route-map $outRouteMap out
+            nei $v4 soft-reconfiguration inbound
+            nei $v4 act
             ";
         }
 
         if(isset($tunnel->ip6)){
-            $v6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next()->next();
-            $updateSource =  (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next();
+            $v6 = (string) Network::parse("$tunnel->ip6/$tunnel->ip6_cidr")->getFirstIP()->next()->next();
+            $updateSource =  (string) Network::parse("$tunnel->ip6/$tunnel->ip6_cidr")->getFirstIP()->next();
             $inRouteMap = env('IPV6_IN_ROUTEMAP','customer');
             $outRouteMap = env('IPV6_OUT_ROUTEMAP','rpki');
             $command .= "
-            no nei {$v6}
-            nei {$v6} remote-as {$asn->asn}
-            nei {$v6} update-source {$updateSource}
+            no nei $v6
+            nei $v6 remote-as $asn->asn
+            nei $v6 update-source $updateSource
             add ipv6
-            nei {$v6} maximum-prefix {$asn->limit} restart 30
-            nei {$v6} route-map {$inRouteMap} in
-            nei {$v6} route-map {$outRouteMap} out
-            nei {$v6} soft-reconfiguration inbound
-            nei {$v6} act
+            nei $v6 maximum-prefix $asn->limit restart 30
+            nei $v6 route-map $inRouteMap in
+            nei $v6 route-map $outRouteMap out
+            nei $v6 soft-reconfiguration inbound
+            nei $v6 act
             ";
         }
         $command .= "\"";
@@ -103,7 +106,7 @@ class FRRController extends Controller
     {
         return  "vtysh -c \"
             conf t
-            {$commands}
+            $commands
         \"";
     }
 
@@ -118,15 +121,15 @@ class FRRController extends Controller
     {
         switch ($type){
             case "ipv6":
-                $ip = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next()->next();
+                $ip = (string) Network::parse("$tunnel->ip6/$tunnel->ip6_cidr")->getFirstIP()->next()->next();
                 break;
             case "ipv4":
-                $ip = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
+                $ip = (string) Network::parse("$tunnel->ip4/$tunnel->ip4_cidr")->getFirstIP()->next()->next();
                 break;
             default:
                 return "";
         }
-        return "vtysh -c \" sh bgp nei {$ip} json \" ";
+        return "vtysh -c \" sh bgp nei $ip json \" ";
 
     }
 
@@ -141,15 +144,15 @@ class FRRController extends Controller
     {
         switch ($type){
             case "ipv6":
-                $ip = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next()->next();
+                $ip = (string) Network::parse("$tunnel->ip6/$tunnel->ip6_cidr")->getFirstIP()->next()->next();
                 break;
             case "ipv4":
-                $ip = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
+                $ip = (string) Network::parse("$tunnel->ip4/$tunnel->ip4_cidr")->getFirstIP()->next()->next();
                 break;
             default:
                 return "";
         }
-        return "vtysh -c \" sh bgp nei {$ip} routes json \" ";
+        return "vtysh -c \" sh bgp nei $ip routes json \" ";
 
     }
 }

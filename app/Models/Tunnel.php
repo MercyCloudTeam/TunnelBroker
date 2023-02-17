@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  * Status
  * 1 - Active
  * 2 - Waiting Create
+ * 3 - Rebuilding
  * 4 - Create Error(Waiting Retry)
  * 5 - IP Changed
  * 6 - Error

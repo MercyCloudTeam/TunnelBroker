@@ -181,7 +181,6 @@ class TunnelController extends Controller
         //清理IP分配
 
         IPAllocation::where('tunnel_id', $tunnel->id)->update(['tunnel_id' => null]);//IP重新进入分配表
-
         $tunnel->update(['status' => 7]);
 //        DeleteTunnel::dispatch($tunnel);
 //        $tunnel->delete();
@@ -256,7 +255,6 @@ class TunnelController extends Controller
                         'local' => ['pubkey' => base64_encode($curve25519PubKey), 'privkey' => base64_encode($curve25519PrivKey)],
                     ];
                 }
-
                 break;
         }
 
@@ -294,7 +292,7 @@ class TunnelController extends Controller
      */
     public function deleteTunnelCommand(Tunnel $tunnel)
     {
-        return "sudo ip link delete {$tunnel->interface}";
+        return "sudo ip link delete $tunnel->interface";
     }
 
     /**
@@ -481,6 +479,21 @@ class TunnelController extends Controller
                 throw new Exception('Node IP address exhaustion');
         }
 
+        //Check Ip Address Limit
+        $user = User::find($tunnel->user_id);
+        $plan = $user->plan;
+        $ipv4Limit = $plan->ipv4_num;
+        $ipv6Limit = $plan->ipv6_num;
+        $usageIPAddress = (new UserController())->getIpAddressUsage($user);
+        if ($usageIPAddress['ipv4'] >= $ipv4Limit) {
+            $tunnel->update(['status' => 4]);
+            return false;
+        }
+        if ($usageIPAddress['ipv6'] >= $ipv6Limit) {
+            $tunnel->update(['status' => 4]);
+            return false;
+        }
+
         DB::beginTransaction();
         $ips = IPAllocation::ofActive($tunnel->node_id);
         if ($forcePublic) {
@@ -496,7 +509,7 @@ class TunnelController extends Controller
                 $update['status'] = 4;
                 $tunnel->update($update);
                 DB::rollBack();
-                throw new Exception('No available port');
+                return false;
             }
             $update['srcport'] = $port;
         }
@@ -511,7 +524,8 @@ class TunnelController extends Controller
                 $update['status'] = 4;
                 $tunnel->update($update);
                 DB::rollBack();
-                throw new Exception('Node IP address exhaustion IPV6');
+                return false;
+//                throw new Exception('Node IP address exhaustion IPV6');
             }
         }
         if ($v4) {
@@ -524,7 +538,8 @@ class TunnelController extends Controller
                 $update['status'] = 4;
                 $tunnel->update($update);
                 DB::rollBack();
-                throw new Exception('Node IP address exhaustion IPV4');
+                return false;
+//                throw new Exception('Node IP address exhaustion IPV4');
             }
         }
 
@@ -536,20 +551,24 @@ class TunnelController extends Controller
             throw $e;
         }
         DB::commit();
+        return true;
         //v6默认使用 ::2  v4则按CIDR大小使用第一个IP
     }
 
     public function delTunnel(SSH2 $ssh, Tunnel $tunnel)
     {
-        if ($tunnel->status == 7) {
-            $result[] = $ssh->exec($this->deleteTunnelCommand($tunnel));//执行创建Tunnel命令
-//            if (!empty($tunnel->asn_id)) {//清理BGP配置
-//                $result[] = $ssh->exec((new FRRController())->deleteBGP($tunnel));
-//            }
-            Log::debug('DelTunnel Exec result', [$result]);
-            $tunnel->delete();
+        switch ($tunnel->status) {
+            case 7:
+                //Del Tunnel
+                $result[] = $ssh->exec($this->deleteTunnelCommand($tunnel));
+                Log::debug('DelTunnel Exec result', [$result]);
+                $tunnel->delete();
+                break;
+            case 3:
+                //Rebuild Tunnel
+                $ssh->exec($this->deleteTunnelCommand($tunnel));
+                break;
         }
-
     }
 
     public function changeTunnelIP(SSH2 $ssh, Tunnel $tunnel)
@@ -571,6 +590,12 @@ class TunnelController extends Controller
     }
 
 
+    public function rebuildTunnel(SSH2 $ssh, Tunnel $tunnel)
+    {
+        $this->delTunnel($ssh, $tunnel);
+        $this->createTunnelAction($ssh, $tunnel);
+    }
+
     public function createTunnel(SSH2 $ssh, Tunnel $tunnel)
     {
         if ($tunnel->status == 2) {
@@ -584,9 +609,9 @@ class TunnelController extends Controller
             } else {
                 try {
                     if ($tunnel->config['force_public_ip_address'] ?? false) {
-                        $this->assignIP($tunnel, true);
+                        $bool = $this->assignIP($tunnel, true);
                     } else {
-                        $this->assignIP($tunnel);
+                        $bool = $this->assignIP($tunnel);
                     }
                 } catch (Throwable $e) {
                     \Illuminate\Support\Facades\Log::error('Tunnel IP allocation failed', [$e->getMessage(), $tunnel->toArray()]);
@@ -594,7 +619,9 @@ class TunnelController extends Controller
                     return;
                 }
                 $tunnel->refresh();//重新加载模型
-                $this->createTunnelAction($ssh, $tunnel);
+                if ($bool) {
+                    $this->createTunnelAction($ssh, $tunnel);
+                }
 
             }
         }
@@ -628,14 +655,21 @@ class TunnelController extends Controller
             $ip4 = (string)Network::parse("$tunnel->ip4/{$tunnel->ip4_cidr}")->getFirstIP()->next();
             $result[] = $ssh->exec("sudo ip addr add $ip4/$tunnel->ip4_cidr dev $tunnel->interface");
         }
-        //TODO Additional IP address
+        //Speed Limit
+        $plan = User::find($tunnel->user_id)->plan;
+        $speed = $plan->speed;
+        if ($speed > 0) {
+            if ($tunnel->status != 2) {
+                $result[] = $ssh->exec("tc qdisc del dev $tunnel->interface ingress");
+            }
+            $result[] = $ssh->exec("sudo tc qdisc add dev $tunnel->interface ingress handle ffff:");
+            $result[] = $ssh->exec("sudo tc filter add dev $tunnel->interface parent ffff: protocol all prio 1 basic police rate {$speed}Mbit burst 10Mbit mtu 65535 drop");
+        }
 
-        //TODO TC限速配置
         Log::debug("Create Tunnel Result", [$result, $command]);
         foreach ($result as $item) {
             if (!empty($item)) {
                 Log::info("Tunnel($tunnel->id) creation return", [$item, $command]);
-//                $tunnel->update(['status' => 6]);
             }
         }
         //执行完成

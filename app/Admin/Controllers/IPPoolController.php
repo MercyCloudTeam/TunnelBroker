@@ -29,6 +29,7 @@ class IPPoolController extends AdminController
             $grid->column('cidr');
             $grid->column('allocation_size');
             $grid->column('subnet');
+            $grid->column('intranet');
             $grid->column('ip_type');
             $grid->column('type');
             $grid->column('created_at');
@@ -85,6 +86,7 @@ class IPPoolController extends AdminController
             $form->select('ip_type')->options(['ipv4' => 'IPV4', 'ipv6' => 'IPV6'])->required()->default('ipv6');
             $form->switch('generated')->default(true);
             $form->text('type')->default('common')->required();
+            $form->switch('intranet');
 
             $form->display('created_at');
             $form->display('updated_at');

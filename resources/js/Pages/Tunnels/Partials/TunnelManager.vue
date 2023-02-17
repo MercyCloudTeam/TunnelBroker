@@ -113,7 +113,6 @@ const modeChange = () => {
 
 
 <template>
-    <!-- Generate API Token -->
     <FormSection @submitted="createTunnel">
         <template #title>
             Create Tunnel

@@ -74,6 +74,11 @@ const getStatusDisplay = (status) => {
                 'class': 'text-yellow-600',
                 'text': 'Waiting Create'
             };
+        case 3:
+            return {
+                'class': 'text-yellow-600',
+                'text': 'Rebuilding'
+            };
         case 4:
             return {
                 'class': 'text-yellow-600',

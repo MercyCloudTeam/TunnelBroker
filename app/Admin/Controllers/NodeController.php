@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Admin\Repositories\Node;
+use App\Http\Controllers\NodeComponent\NodeComponentBaseController;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Show;
@@ -26,7 +27,7 @@ class NodeController extends AdminController
 //           dd( $grid->getVisibleColumnNames());
             $grid->column('id')->sortable();
             $grid->column('ip');
-            $grid->column('county');
+            $grid->column('country');
             $grid->column('ip6');
             $grid->column('port');
             $grid->column('status');
@@ -73,27 +74,40 @@ class NodeController extends AdminController
      */
     protected function form()
     {
-        return Form::make(new Node(), function (Form $form) {
-            $form->display('id');
-            $form->text('title')->required();
-            $form->ip('ip')->required();
-            $form->ip('public_ip')->help('Can be empty, publicly configured IPV6, used when the node is behind NAT');;
-            $form->text('ip6');
-            $form->text('public_ip6')->help('Can be empty, publicly configured IPV6, used when the node is behind NAT');
+        return Form::make(Node::with('components'), function (Form $form) {
+            $form->column(6, function (Form $form) {
 
-            $form->text('username')->default('root')->value($form->model()->username);;
-            $form->select('login_type')->options(config('status.node.login_type'))->default('password')->value($form->model()->login_type);
-            $form->password('password')->value($form->model()->password);
+                $form->display('id');
+                $form->text('title')->required();
+                $form->ip('ip')->required();
+                $form->ip('public_ip')->help('Can be empty, publicly configured IPV6, used when the node is behind NAT');;
+                $form->text('ip6');
+                $form->text('public_ip6')->help('Can be empty, publicly configured IPV6, used when the node is behind NAT');
 
-            $form->text('county');
+                $form->text('username')->default('root')->value($form->model()->username);;
+                $form->select('login_type')->options(config('status.node.login_type'))->default('password')->value($form->model()->login_type);
+                $form->password('password')->value($form->model()->password);
 
-            $form->number('port')->max(65535)->min(1)->default(22)->value($form->model()->port);;
-            $form->select('status')->options(config('status.node.status'))->default(1);
-            $form->number('limit')->default(10000);
-            $form->keyValue('config')->value($form->model()->config);
+                $form->text('country');
 
-            $form->display('created_at');
-            $form->display('updated_at');
+                $form->number('port')->max(65535)->min(1)->default(22)->value($form->model()->port);;
+                $form->select('status')->options(config('status.node.status'))->default(1);
+                $form->number('limit')->default(10000);
+                $form->keyValue('config')->value($form->model()->config);
+
+                $form->display('created_at');
+                $form->display('updated_at');
+            });
+
+            $form->column(6, function (Form $form) {
+
+                $form->hasMany('components', function (Form\NestedForm $form) {
+                    $form->select('component')->options(array_combine(NodeComponentBaseController::$components,NodeComponentBaseController::$components));
+                    $form->select('status')->options(['active' => 'Active', 'inactive' => 'Inactive'])->default('active');
+//                    $form->text('data')->help('JSON format');
+                    $form->keyValue('data');
+                });
+            });
         });
     }
 }
