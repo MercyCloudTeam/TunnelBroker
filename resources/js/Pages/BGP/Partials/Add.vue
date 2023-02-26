@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from 'vue';
-import { useForm } from '@inertiajs/inertia-vue3';
+import {ref} from 'vue';
+import {useForm} from '@inertiajs/inertia-vue3';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
 import InputError from '@/Components/InputError.vue';
@@ -10,13 +10,19 @@ import TextInput from '@/Components/TextInput.vue';
 
 const asnInput = ref(null);
 
-const form = useForm({
-    asn: '',
+defineProps({
+    asn: Array,
+    tunnels: Array,
 });
 
-const updatePassword = () => {
-    form.post(route('asn.validate'), {
-        errorBag: 'updatePassword',
+const form = useForm({
+    asn: '',
+    tunnel: '',
+});
+
+const addBGP = () => {
+    form.post(route('bgp.store'), {
+        errorBag: 'CreateBGP',
         preserveScroll: true,
         onSuccess: () => form.reset(),
         onError: () => {
@@ -31,28 +37,37 @@ const updatePassword = () => {
 
 
 <template>
-    <FormSection @submitted="updatePassword">
+    <FormSection @submitted="addBGP">
         <template #title>
-            Add ASN
+            Add BGP Session
         </template>
 
         <template #description>
-            Please enter your ASN, (the recommended account email is the same as the ASN information email)
+
         </template>
 
         <template #form>
             <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="asn" value="Autonomous System Number(ASN)" />
-                <TextInput
-                    id="asn"
-                    ref="asnInput"
-                    v-model="form.asn"
-                    type="text"
-                    class="mt-1 block w-full"
-                    autocomplete="asn"
-                    oninput="value=value.replace(/[^\d]/g, '')"
-                />
-                <InputError :message="form.errors.asn" class="mt-2" />
+                <InputLabel for="asn" value="ASN"/>
+                <select
+                    class="border-gray-300 w-full focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
+                    v-model="form.asn">
+                    <option v-for="item in asn" :value="item.id">
+                        AS{{ item.asn }}
+                    </option>
+                </select>
+                <InputError :message="form.errors.asn" class="mt-2"/>
+            </div>
+            <div class="col-span-6 sm:col-span-4">
+                <InputLabel for="tunnel" value="Tunnel"/>
+                <select
+                    class="border-gray-300 w-full focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
+                    v-model="form.tunnel">
+                    <option v-for="item in tunnels" :value="item.tunnel_id">
+                        #{{ item.tunnel_id }}  {{ item.remote }}
+                    </option>
+                </select>
+                <InputError :message="form.errors.tunnel" class="mt-2"/>
             </div>
         </template>
 
@@ -62,7 +77,7 @@ const updatePassword = () => {
             </ActionMessage>
 
             <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                Add
+                Create
             </PrimaryButton>
         </template>
     </FormSection>

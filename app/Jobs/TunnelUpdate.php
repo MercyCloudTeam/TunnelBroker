@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\TunnelController;
+use App\Models\BGPSession;
 use App\Models\Tunnel;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -68,7 +69,6 @@ class TunnelUpdate implements ShouldQueue
         ])->orderBy('node_id', 'desc')->chunk(50, function ($tunnels) {
             foreach ($tunnels as $tunnel) {
                 $this->getSSHConnect($tunnel);
-//                Log::debug('TunnelUpdate Processing Tunnel:'.$tunnel->id,[$tunnel,$this->connect]);
                 if (!$this->connect->isConnected() || !$this->connect->isAuthenticated()) {
                     Log::debug('TunnelUpdate SSH Connect Failed', [$tunnel, $this->connect]);
                     throw new Exception('SSH Connect Failed');
@@ -86,6 +86,28 @@ class TunnelUpdate implements ShouldQueue
                         break;
                     case 7:
                         $this->tunnelController->delTunnel($this->connect,$tunnel);
+                        break;
+                }
+            }
+        });
+
+        //IF NEED CREATE BGP Session
+        BGPSession::where([
+            ['status', '!=', 1],
+        ])->chunk(50, function ($bgpSessions) {
+            foreach ($bgpSessions as $bgpSession) {
+                $this->getSSHConnect($bgpSession->tunnel);
+                if (!$this->connect->isConnected() || !$this->connect->isAuthenticated()) {
+                    Log::debug('TunnelUpdate SSH Connect Failed', [$bgpSession, $this->connect]);
+                    throw new Exception('SSH Connect Failed');
+                }
+                switch ($bgpSession->status) {
+                    case 2:
+                        $this->tunnelController->createBGPSession($this->connect,$bgpSession);
+                        break;
+                    case 3:
+                    case 7:
+                        $this->tunnelController->delBGPSession($this->connect,$bgpSession);
                         break;
                 }
             }

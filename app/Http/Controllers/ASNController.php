@@ -86,28 +86,31 @@ class ASNController extends Controller
                 'storeASN' => ['You can only bind 5 ASN'],
             ]);
         }
-        $emails = $this->getASNEmail($request->asn);
-        $validate = 0;
 
-        if (!empty($emails) && is_array($emails) && in_array(strtolower($user->email),$emails) && isset($user->email_verified_at)){
-            //用户注册时候的邮箱和ASN管理员邮箱一致 自动通过验证
-            $validate=1;
-            $email = $user->email;
-            $email_verified_at = $user->email_verified_at;
-            //通过认证则请求RIPE更新AS-SET
-//            ASSETCreate::dispatch();
-        }
+        //TODO 等待修复 2023-2-24 链接不上RIPE服务器
+
+//        $emails = $this->getASNEmail($request->asn);
+//        $validate = 0;
+//
+//        if (!empty($emails) && is_array($emails) && in_array(strtolower($user->email),$emails) && isset($user->email_verified_at)){
+//            //用户注册时候的邮箱和ASN管理员邮箱一致 自动通过验证
+//            $validate=1;
+//            $email = $user->email;
+//            $email_verified_at = $user->email_verified_at;
+//            //通过认证则请求RIPE更新AS-SET
+////            ASSETCreate::dispatch();
+//        }
 
         ASN::updateOrInsert([
             'asn'=>$request->asn,
         ],[
             'user_id'=>$user->id,//如果对象存在且满足重设条件 将会将已创建对象的所有者更新到对方
-            'validate'=>$validate,
+            'validate'=>false,
             'email'=>$email ?? null,
             'email_verified_at'=>$email_verified_at ?? null,
         ]);
 
-        return Redirect::route('bgp.validate')->with('success', 'Add ASN Success');
+        return Redirect::back();
 
     }
 }

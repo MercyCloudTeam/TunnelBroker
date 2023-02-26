@@ -1,117 +1,60 @@
 <script setup>
-import ActionMessage from '@/Components/ActionMessage.vue';
 import ActionSection from '@/Components/ActionSection.vue';
-import Checkbox from '@/Components/Checkbox.vue';
-import ConfirmationModal from '@/Components/ConfirmationModal.vue';
-import DangerButton from '@/Components/DangerButton.vue';
 import DialogModal from '@/Components/DialogModal.vue';
-import FormSection from '@/Components/FormSection.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import SectionBorder from '@/Components/SectionBorder.vue';
-import TextInput from '@/Components/TextInput.vue';
 import {ref} from "vue";
 import {useForm} from "@inertiajs/inertia-vue3";
 import Swal from "sweetalert2";
 
 defineProps({
-    tunnels: Array,
+    bgp: Array,
 })
 
 
-const confirmTunnelDeletionModal = ref(false);
-const displayTunnelInfoModal = ref(false);
+const confirmBGPDeletionModal = ref(false);
 
-const confirmTunnelDeletion = (tunnel) => {
-    confirmTunnelDeletionModal.value = true;
-    delTunnelForm.tunnel = tunnel;
+const confirmBGPDeletion = (bgp) => {
+    confirmBGPDeletionModal.value = true;
+    delBGPForm.bgp = bgp;
 }
 
-const displayTunnelInfo = (tunnel) => {
-    displayTunnelInfoModal.value = true;
-    detailTunnel.tunnel = tunnel;
-}
+const delBGPForm = useForm({
+    bgp: null,
+})
 
-const deleteTunnel = () => {
+
+const deleteBGP = () => {
     confirmTunnelDeletionModal.value = false;
-    delTunnelForm.delete(route('tunnels.destroy', delTunnelForm.tunnel.id), {
+    delBGPForm.delete(route('BGP.destroy', delBGPForm.bgp.id), {
         preserveScroll: true,
-        errorBag: 'deleteTunnel',
+        errorBag: 'deleteBGP',
         onSuccess: () => {
-            delTunnelForm.reset();
-            Swal.fire({
-                icon: 'success',
-                title: 'Tunnel deleted',
-                text: 'Tunnel deleted successfully,Tunnel will be deleted in 1 minute',
-            })
+            delBGPForm.reset();
         },
         onError: () => {
-            console.log(delTunnelForm.errors.deleteTunnel);
+            console.log(delBGPForm.errors.deleteBGP);
         },
     });
 
-}
-
-const delTunnelForm = useForm({
-    tunnel: null,
-})
-
-const detailTunnel = useForm({
-    tunnel: null,
-})
-
-const getStatusDisplay = (status) => {
-    switch (status) {
-        case 1:
-            return {
-                'class': 'text-green-600',
-                'text': 'Active'
-            };
-        case 2:
-            return {
-                'class': 'text-yellow-600',
-                'text': 'Waiting Create'
-            };
-        case 4:
-            return {
-                'class': 'text-yellow-600',
-                'text': 'Create Error(Waiting Retry)'
-            }
-        case 5:
-            return {
-                'class': 'text-red-600',
-                'text': 'IP Changed'
-            };
-        case 6:
-            return {
-                'class': 'text-red-600',
-                'text': 'Error'
-            };
-        case 7:
-            return {
-                'class': 'text-red-600',
-                'text': 'Deleting'
-            };
-    }
 }
 
 </script>
 
 
 <template>
-    <div v-if="tunnels.length > 0">
+    <div v-if="bgp.length > 0">
         <SectionBorder/>
         <!-- Manage API Tokens -->
         <div class="mt-10 sm:mt-0">
             <ActionSection>
                 <template #title>
-                    Manage Tunnels
+                    Manage BGPs
                 </template>
 
                 <template #description>
-                    You
+
                 </template>
 
                 <template #content>
@@ -127,18 +70,14 @@ const getStatusDisplay = (status) => {
                                 <th
                                     class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
                                 >
-                                    Remote Address
+                                    BGP
                                 </th>
                                 <th
                                     class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
                                 >
                                     Status
                                 </th>
-                                <th
-                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
-                                >
-                                    Protocol
-                                </th>
+
                                 <th
                                     class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900 text-right"
                                 >
@@ -149,22 +88,20 @@ const getStatusDisplay = (status) => {
                             </thead>
 
                             <tbody class="divide-y divide-gray-200">
-                            <tr v-for="tunnel in tunnels" :key="tunnel.id">
+                            <tr v-for="item in bgp" :key="item.id">
                                 <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-                                    {{ tunnel.id }}
+                                    #{{ item.id }}
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ tunnel.remote }}</td>
-                                <td class="whitespace-nowrap px-4 py-2" :class="getStatusDisplay(tunnel.status).class">
-                                    {{ getStatusDisplay(tunnel.status).text }}
+                                <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+                                    {{ item.bgp }}
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-2 text-gray-700"> {{ tunnel.mode }}</td>
+                                <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+                                    <div v-if="item.validate === 1" class="badge badge-accent">Validate</div>
+                                    <div v-if="item.validate === 0" class="badge badge-secondary">No Validate</div>
+                                </td>
                                 <td class="whitespace-nowrap px-4 py-2 text-right">
-                                    <button class="cursor-pointer ml-6 text-sm text-blue-500"
-                                            @click="displayTunnelInfo(tunnel)">
-                                        Detail
-                                    </button>
-                                    <button v-if="tunnel.status !== 7" class="cursor-pointer ml-6 text-sm text-red-500"
-                                            @click="confirmTunnelDeletion(tunnel)">
+                                    <button class="cursor-pointer ml-6 text-sm text-red-500"
+                                            @click="confirmBGPDeletion(item)">
                                         Delete
                                     </button>
                                 </td>
@@ -176,52 +113,22 @@ const getStatusDisplay = (status) => {
             </ActionSection>
         </div>
 
-        <DialogModal :show="confirmTunnelDeletionModal" @close="confirmTunnelDeletionModal = false">
+        <DialogModal :show="confirmBGPDeletionModal" @close="confirmBGPDeletionModal = false">
             <template #title>
-                Remove Tunnel
+                Remove BGP
             </template>
 
             <template #content>
                 <div>
-                    Are you sure you want to remove this tunnel?
+                    Are you sure you want to remove this BGP?
                 </div>
             </template>
 
             <template #footer>
-                <PrimaryButton @click="deleteTunnel">
+                <PrimaryButton @click="deleteBGP">
                     Remove
                 </PrimaryButton>
-                <SecondaryButton @click="confirmTunnelDeletionModal = false">
-                    Close
-                </SecondaryButton>
-            </template>
-        </DialogModal>
-
-        <DialogModal :show="displayTunnelInfoModal" @close="displayTunnelInfoModal = false">
-            <template #title>
-                Tunnel #{{ detailTunnel.tunnel.id }}
-            </template>
-
-            <template #content>
-                <div>
-
-                    <p> Remote Address: {{ detailTunnel.tunnel.remote }} </p>
-
-                    <p>Protocol: {{ detailTunnel.tunnel.mode }}</p>
-                    <p>Status: <span
-                        :class="getStatusDisplay(detailTunnel.tunnel.status).class">{{ getStatusDisplay(detailTunnel.tunnel.status).text }}</span>
-                    </p>
-                    <p>Created At: {{ detailTunnel.tunnel.created_at }}</p>
-                    <div v-if="detailTunnel.tunnel.config">
-                        <p v-if="detailTunnel.tunnel.config.local.pubkey">Local Public Key: {{detailTunnel.tunnel.config.local.pubkey}}</p>
-                        <p v-if="detailTunnel.tunnel.config.local.privkey">Local Privacy Key: {{detailTunnel.tunnel.config.local.privkey}}</p>
-                        <p v-if="detailTunnel.tunnel.config.remote.pubkey">Server Public Key: {{detailTunnel.tunnel.config.remote.pubkey}}</p>
-                    </div>
-                </div>
-            </template>
-
-            <template #footer>
-                <SecondaryButton @click="displayTunnelInfoModal = false">
+                <SecondaryButton @click="confirmBGPDeletionModal = false">
                     Close
                 </SecondaryButton>
             </template>

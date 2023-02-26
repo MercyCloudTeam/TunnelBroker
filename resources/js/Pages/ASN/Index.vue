@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-    <AppLayout title="Tunnels">
+    <AppLayout title="ASN">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 ASN
@@ -22,7 +22,7 @@ defineProps({
         <div>
             <div v-if="asn.length > 0">
                 <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-<!--                    <List :asn="asn"/>-->
+                    <List :asn="asn"/>
                 </div>
             </div>
             <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">

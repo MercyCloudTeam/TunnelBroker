@@ -84,11 +84,16 @@ class User extends Authenticatable implements Auditable,MustVerifyEmail
 
     public function asn()
     {
-        return $this->hasMany(ASN::class);
+        return $this->hasMany(ASN::class, 'user_id', 'id');
     }
 
     public function ipAllocation()
     {
         return $this->hasManyThrough(IPAllocation::class, Tunnel::class, 'user_id', 'tunnel_id', 'id', 'id');
+    }
+
+    public function bgp()
+    {
+        return $this->hasMany(BGPSession::class, 'user_id', 'id');
     }
 }

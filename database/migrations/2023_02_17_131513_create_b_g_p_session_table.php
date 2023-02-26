@@ -15,11 +15,14 @@ return new class extends Migration
     {
         Schema::create('bgp_sessions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('node_id');
+            $table->foreignId('tunnel_id');
             $table->foreignId('asn_id');
             $table->foreignId('user_id');
-            $table->string('status')->nullable();
-
+            $table->integer('status')->nullable();
+            $table->integer('limit')->nullable(); //默认按照ASN表的写一次，但可以意外修改
+            $table->json('session')->nullable();
+            $table->json('routes')->nullable();
+            $table->json('data')->nullable();
             $table->timestamps();
         });
 

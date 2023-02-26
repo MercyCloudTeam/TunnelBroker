@@ -1,0 +1,65 @@
+!
+bgp community-list 1 seq 5 permit 65535:10086
+!
+route-map customer permit 5
+ match ipv6 address prefix-list CUSTOMERv6
+ match rpki valid
+ set community 65535:10086
+ set local-preference 30
+ set weight 110
+exit
+!
+route-map customer permit 10
+ match ipv6 address prefix-list CUSTOMERv6
+ match rpki notfound
+ set community 65535:10010
+ set local-preference 20
+exit
+!
+route-map customer permit 15
+ match ip address prefix-list CUSTOMERv4
+ match rpki valid
+exit
+!
+route-map customer deny 20
+ match rpki invalid
+exit
+!
+route-map rpki deny 10
+ match rpki invalid
+exit
+!
+route-map rpki permit 20
+ match rpki notfound
+ set local-preference 20
+exit
+!
+route-map rpki permit 30
+ match rpki valid
+ set local-preference 30
+exit
+!
+route-map upstrams permit 5
+ match community 1
+ match ipv6 address prefix-list CUSTOMERv6
+ match rpki valid
+exit
+!
+route-map upstrams deny 10
+ match rpki invalid
+exit
+!
+route-map upstrams permit 15
+ match ipv6 address prefix-list SELFASNV6
+exit
+!
+route-map upstrams deny 65535
+exit
+!
+route-map DENYALL deny 5
+exit
+!
+rpki
+ rpki polling_period 1000
+ rpki cache 127.0.0.1 8282 preference 2
+exit

@@ -1,11 +1,13 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import TunnelManager from "@/Pages/Tunnels/Partials/TunnelManager.vue";
+import Add from "@/Pages/BGP/Partials/Add.vue";
+import List from "@/Pages/BGP/Partials/List.vue";
 
 defineProps({
     asn: Array,
     tunnels: Array,
     availableMode: Array,
+    bgp: Array,
 });
 </script>
 
@@ -18,12 +20,13 @@ defineProps({
         </template>
 
         <div>
-            <div v-if="asn.length > 0">
+            <div v-if="bgp.length > 0">
                 <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-<!--                    <List :tunnels="asn"/>-->
+                    <List :bgp="bgp"/>
                 </div>
             </div>
             <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+                <Add :tunnels="tunnels" :asn="asn" />
 <!--                <TunnelManager  :tunnels="tunnels" :available-mode="availableMode" :nodes="nodes" ></TunnelManager>-->
             </div>
         </div>

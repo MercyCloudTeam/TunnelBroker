@@ -70,6 +70,8 @@ class NodeUpdate implements ShouldQueue
                 }
                 //Update Traffic
                 $this->nodeController->calculationTraffic($this->connect,$node);
+                //Update BGP Session
+                $this->nodeController->updateBGPSessionStatus($this->connect,$node);
             }
         });
     }

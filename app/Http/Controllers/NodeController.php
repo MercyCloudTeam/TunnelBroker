@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BGPSession;
 use App\Models\IPAllocation;
 use App\Models\Node;
 use App\Models\Tunnel;
@@ -44,7 +45,7 @@ class NodeController extends Controller
                 break;
             case "rsa":
                 $key = PublicKeyLoader::load($node->password);
-                $ssh->login($node->username,$key);
+                $ssh->login($node->username, $key);
                 break;
         }
         if ($ssh->isAuthenticated() && $ssh->isConnected()) {
@@ -57,6 +58,89 @@ class NodeController extends Controller
             Log::info('Login Server Fail', ['node' => $node->toArray(), 'error' => $ssh->getErrors()]);
             throw new Exception('Login Server Fail');
         }
+    }
+
+    public function updateBGPSessionStatus(SSH2 $connect, Node $node)
+    {
+        if ($node->components->where('component', 'FRR')->where('status', 'active')->isEmpty()) {
+            return;
+        }
+        BGPSession::where('bgp_sessions.status', 1)
+            ->join('tunnels', 'tunnels.id', '=', 'bgp_sessions.tunnel_id')
+            ->where('tunnels.node_id', $node->id)
+            ->chunk(50, function ($bgpSessions) use ($connect) {
+                foreach ($bgpSessions as $bgpSession) {
+                    $this->updateBGPSessionStatusByTunnel($connect, $bgpSession);
+                }
+            });
+    }
+
+    public function updateBGPSessionStatusByTunnel(SSH2 $connect, BGPSession $session)
+    {
+        $tunnel = $session->tunnel;
+        $updateStatus = [];
+        $updateRoute = [];
+        if (isset($tunnel->ip4)) {
+            $v4 = (string)Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
+            $v4StatusResult = $connect->exec("sudo /usr/bin/vtysh -c 'show ip bgp neighbors $v4 json'");
+            $v4ReceivedRouteResult = $connect->exec("sudo /usr/bin/vtysh -c 'show ip bgp neighbors $v4 received-routes json'");
+            !$this->isJson($v4StatusResult) ?: $v4StatusResult = json_decode($v4StatusResult, true);
+            !$this->isJson($v4ReceivedRouteResult) ?: $v4ReceivedRouteResult = json_decode($v4ReceivedRouteResult, true);
+            if (is_array($v4StatusResult)) {
+                $updateStatus['v4'] = $v4StatusResult;
+            } else {
+                Log::info('Update BGPSession Status Fail(json decode fail) $v4StatusResult',
+                    ['bgpSession' => $session->toArray(), 'error' => $v4StatusResult]
+                );
+            }
+            if (is_array($v4ReceivedRouteResult)) {
+                $updateRoute['v4'] = $v4ReceivedRouteResult;
+            } else {
+                Log::info('Update BGPSession Status Fail(json decode fail) $v4ReceivedRouteResult',
+                    ['bgpSession' => $session->toArray(), 'error' => $v4ReceivedRouteResult]
+                );
+            }
+        }
+        if (isset($tunnel->ip6)) {
+            $v6 = (string)Network::parse("$tunnel->ip6/$tunnel->ip6_cidr")->getFirstIP()->next()->next();
+            $v6StatusResult = $connect->exec("sudo /usr/bin/vtysh -c 'show ip bgp neighbors $v6 json'");
+            $v6ReceivedRouteResult = $connect->exec("sudo /usr/bin/vtysh -c 'show ip bgp neighbors $v6 received-routes json'");
+            !$this->isJson($v6StatusResult) ?: $v6StatusResult = json_decode($v6StatusResult, true);
+            !$this->isJson($v6ReceivedRouteResult) ?: $v6ReceivedRouteResult = json_decode($v6ReceivedRouteResult, true);
+            if (is_array($v6StatusResult)) {
+                $updateStatus['v6'] = $v6StatusResult;
+            } else {
+                Log::info('Update BGPSession Status Fail(json decode fail) $v6StatusResult',
+                    ['bgpSession' => $session->toArray(), 'error' => $v6StatusResult]
+                );
+            }
+            if (is_array($v6ReceivedRouteResult)) {
+                $updateRoute['v6'] = $v6ReceivedRouteResult;
+            } else {
+                Log::info('Update BGPSession Status Fail(json decode fail) $v6ReceivedRouteResult',
+                    ['bgpSession' => $session->toArray(), 'error' => $v6ReceivedRouteResult]
+                );
+            }
+
+            $session->update([
+                'session' => array_merge($session->session ?? [], $updateStatus),
+                'route' => array_merge($session->route ?? [], $updateRoute)
+            ]);
+        }
+
+
+//        $newSessionStatus = [];
+//        foreach ($result as $k=>$v){
+//            $jsonDecode = json_decode($v, true);
+//            if (empty($jsonDecode)){
+//                Log::info('Update BGPSession Status Fail(json decode fail)', ['bgpSession' => $session->toArray(), 'error' => $v]);
+//            }else{
+//                $newSessionStatus[$k] = $jsonDecode;
+//            }
+//        }
+//        $session->update([
+//            'session'
+//        ]);
     }
 
     public function calculationTraffic(SSH2 $connect, Node $node)
