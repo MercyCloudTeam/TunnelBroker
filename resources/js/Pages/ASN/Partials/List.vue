@@ -17,17 +17,17 @@ const confirmASNDeletionModal = ref(false);
 
 const confirmASNDeletion = (ASN) => {
     confirmASNDeletionModal.value = true;
-    delASNForm.ASN = ASN;
+    delASNForm.asn = ASN;
 }
 
 const delASNForm = useForm({
-    ASN: null,
+    asn: null,
 })
 
 
 const deleteASN = () => {
-    confirmTunnelDeletionModal.value = false;
-    delASNForm.delete(route('asn.destroy', delASNForm.ASN.id), {
+    confirmASNDeletionModal.value = false;
+    delASNForm.delete(route('asn.destroy', delASNForm.asn.id), {
         preserveScroll: true,
         errorBag: 'deleteASN',
         onSuccess: () => {

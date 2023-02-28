@@ -34,12 +34,15 @@ Route::middleware([
     Route::resource('/tunnels', TunnelController::class)->except([
         'create', 'edit'
     ]);
+    Route::put('/tunnels/{tunnel}/rebuild', [TunnelController::class, 'rebuild'])->name('tunnel.rebuild');
+
     Route::resource('/asn', ASNController::class)->except([
         'create', 'edit'
     ]);
     Route::resource('/bgp', BGPController::class)->except([
         'create', 'edit'
     ]);
+    Route::put('/bgp/{bgp}/rebuild', [BGPController::class, 'rebuild'])->name('bgp.rebuild');
 //    Route::resource('/asn', FRR::class)->except([
 //        'create', 'edit'
 //    ]);

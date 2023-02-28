@@ -32,16 +32,16 @@ class FRRController extends NodeComponentBaseController
      * @return string
      * @throws \Exception
      */
-    public function deleteBGP(Tunnel $tunnel): string
+    public function deleteBGP(Tunnel $tunnel,int $nodeASN): string
     {
-        $command = $this->commandBGP($tunnel->node->asn);
+        $command = $this->commandBGP($nodeASN);
         if (isset($tunnel->ip4)){
-            $ip4 = (string) Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
-            $command .= "no neighbor $ip4";
+            $ip4 = (string) Network::parse("$tunnel->ip4/$tunnel->ip4_cidr")->getFirstIP()->next()->next();
+            $command .= "no neighbor $ip4".PHP_EOL;
         }
         if(isset($tunnel->ip6)){
-            $ip6 = (string) Network::parse("{$tunnel->ip6}/{$tunnel->ip6_cidr}")->getFirstIP()->next()->next();
-            $command .= "no neighbor $ip6";
+            $ip6 = (string) Network::parse("$tunnel->ip6/$tunnel->ip6_cidr")->getFirstIP()->next()->next();
+            $command .= "no neighbor $ip6".PHP_EOL;
         }
         $command .= "\"";
         return $command;
@@ -50,7 +50,9 @@ class FRRController extends NodeComponentBaseController
     /**
      * 创建BGP
      * @param Tunnel $tunnel
-     * @param ASN $ASN
+     * @param ASN $asn
+     * @param int $nodeASN
+     * @param int $limit
      * @return string
      * @throws IpException
      */

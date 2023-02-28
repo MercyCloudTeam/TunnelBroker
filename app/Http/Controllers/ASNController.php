@@ -111,6 +111,16 @@ class ASNController extends Controller
         ]);
 
         return Redirect::back();
+    }
 
+    public function destroy(ASN $asn)
+    {
+        $this->authorize('delete', $asn);
+        //清理IP分配
+
+        $asn->delete();
+//        DeleteTunnel::dispatch($tunnel);
+//        $tunnel->delete();
+        return Redirect::back()->with('success', "Deleted");
     }
 }

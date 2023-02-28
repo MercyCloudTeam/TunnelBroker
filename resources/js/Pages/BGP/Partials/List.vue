@@ -14,20 +14,30 @@ defineProps({
 
 
 const confirmBGPDeletionModal = ref(false);
+const confirmBGPRebuildModal = ref(false);
 
 const confirmBGPDeletion = (bgp) => {
     confirmBGPDeletionModal.value = true;
     delBGPForm.bgp = bgp;
 }
 
+const confirmBGPRebuild = (bgp) => {
+    confirmBGPRebuildModal.value = true;
+    rebuildBGPForm.bgp = bgp;
+}
+
 const delBGPForm = useForm({
+    bgp: null,
+})
+
+const rebuildBGPForm = useForm({
     bgp: null,
 })
 
 
 const deleteBGP = () => {
-    confirmTunnelDeletionModal.value = false;
-    delBGPForm.delete(route('BGP.destroy', delBGPForm.bgp.id), {
+    confirmBGPDeletionModal.value = false;
+    delBGPForm.delete(route('bgp.destroy', delBGPForm.bgp.id), {
         preserveScroll: true,
         errorBag: 'deleteBGP',
         onSuccess: () => {
@@ -35,6 +45,20 @@ const deleteBGP = () => {
         },
         onError: () => {
             console.log(delBGPForm.errors.deleteBGP);
+        },
+    });
+
+}
+const rebuildBGP = () => {
+    confirmBGPRebuildModal.value = false;
+    rebuildBGPForm.put(route('bgp.rebuild', rebuildBGPForm.bgp.id), {
+        preserveScroll: true,
+        errorBag: 'deleteBGP',
+        onSuccess: () => {
+            rebuildBGPForm.reset();
+        },
+        onError: () => {
+            console.log(delBGPForm.errors.rebuildBGPForm);
         },
     });
 
@@ -70,7 +94,12 @@ const deleteBGP = () => {
                                 <th
                                     class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
                                 >
-                                    BGP
+                                    ASN
+                                </th>
+                                <th
+                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
+                                >
+                                    Tunnel
                                 </th>
                                 <th
                                     class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
@@ -93,13 +122,22 @@ const deleteBGP = () => {
                                     #{{ item.id }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-                                    {{ item.bgp }}
+                                    {{ item.asn.asn }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-                                    <div v-if="item.validate === 1" class="badge badge-accent">Validate</div>
-                                    <div v-if="item.validate === 0" class="badge badge-secondary">No Validate</div>
+                                    ({{ item.tunnel.id }}) {{ item.tunnel.remote }}
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+                                    <div v-if="item.status === 1" class="badge badge-accent">Normal</div>
+                                    <div v-if="item.status === 2" class="badge badge-secondary">Waiting create</div>
+                                    <div v-if="item.status === 3" class="badge badge-secondary">Waiting rebuild</div>
+                                    <div v-if="item.status === 4" class="badge badge-secondary">Waiting delete</div>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2 text-right">
+                                    <button class="cursor-pointer ml-6 text-sm text-warning"
+                                            @click="confirmBGPRebuild(item)">
+                                        Rebuild
+                                    </button>
                                     <button class="cursor-pointer ml-6 text-sm text-red-500"
                                             @click="confirmBGPDeletion(item)">
                                         Delete
@@ -126,6 +164,27 @@ const deleteBGP = () => {
 
             <template #footer>
                 <PrimaryButton @click="deleteBGP">
+                    Remove
+                </PrimaryButton>
+                <SecondaryButton @click="confirmBGPDeletionModal = false">
+                    Close
+                </SecondaryButton>
+            </template>
+        </DialogModal>
+
+        <DialogModal :show="confirmBGPRebuildModal" @close="confirmBGPRebuildModal = false">
+            <template #title>
+                Rebuild BGP
+            </template>
+
+            <template #content>
+                <div>
+                    Are you sure you want to remove this BGP?
+                </div>
+            </template>
+
+            <template #footer>
+                <PrimaryButton @click="rebuildBGP">
                     Remove
                 </PrimaryButton>
                 <SecondaryButton @click="confirmBGPDeletionModal = false">

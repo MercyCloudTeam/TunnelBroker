@@ -63,10 +63,11 @@ class BGP implements Rule
             return false;
         }
         //Unique
-        $bgp = BGPSession::where('tunnel_id', $this->tunnel_id)->where('asn_id', $this->asn_id)->get();
+        $bgp = BGPSession::where('tunnel_id', $this->tunnel_id)->get();
         if (!$bgp->isEmpty()) {
             return false;
         }
+
         return true;
     }
 

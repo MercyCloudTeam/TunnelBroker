@@ -23,15 +23,39 @@ defineProps({
 
 const confirmTunnelDeletionModal = ref(false);
 const displayTunnelInfoModal = ref(false);
+const confirmRebuildTunnelModal = ref(false);
 
 const confirmTunnelDeletion = (tunnel) => {
     confirmTunnelDeletionModal.value = true;
     delTunnelForm.tunnel = tunnel;
 }
+const confirmTunnelRebuild = (tunnel) => {
+    confirmRebuildTunnelModal.value = true;
+    rebuildTunnelForm.tunnel = tunnel;
+}
 
 const displayTunnelInfo = (tunnel) => {
     displayTunnelInfoModal.value = true;
     detailTunnel.tunnel = tunnel;
+}
+
+const rebuildTunnel = ()=>{
+    confirmRebuildTunnelModal.value = false;
+    rebuildTunnelForm.put(route('tunnel.rebuild', rebuildTunnelForm.tunnel.id), {
+        preserveScroll: true,
+        errorBag: 'rebuildTunnel',
+        onSuccess: () => {
+            rebuildTunnelForm.reset();
+            Swal.fire({
+                icon: 'success',
+                title: 'Tunnel rebuild',
+                text: 'Tunnel rebuild successfully,Tunnel will be rebuild in 1 minute',
+            })
+        },
+        onError: () => {
+            console.log(rebuildTunnelForm.errors.rebuildTunnel);
+        },
+    });
 }
 
 const deleteTunnel = () => {
@@ -55,6 +79,10 @@ const deleteTunnel = () => {
 }
 
 const delTunnelForm = useForm({
+    tunnel: null,
+})
+
+const rebuildTunnelForm = useForm({
     tunnel: null,
 })
 
@@ -163,9 +191,14 @@ const getStatusDisplay = (status) => {
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2 text-gray-700"> {{ tunnel.mode }}</td>
                                 <td class="whitespace-nowrap px-4 py-2 text-right">
+
                                     <button class="cursor-pointer ml-6 text-sm text-blue-500"
                                             @click="displayTunnelInfo(tunnel)">
                                         Detail
+                                    </button>
+                                    <button class="cursor-pointer ml-6 text-sm text-warning"
+                                            @click="confirmTunnelRebuild(tunnel)">
+                                        Rebuild
                                     </button>
                                     <button v-if="tunnel.status !== 7" class="cursor-pointer ml-6 text-sm text-red-500"
                                             @click="confirmTunnelDeletion(tunnel)">
@@ -196,6 +229,26 @@ const getStatusDisplay = (status) => {
                     Remove
                 </PrimaryButton>
                 <SecondaryButton @click="confirmTunnelDeletionModal = false">
+                    Close
+                </SecondaryButton>
+            </template>
+        </DialogModal>
+        <DialogModal :show="confirmRebuildTunnelModal" @close="confirmRebuildTunnelModal = false">
+            <template #title>
+                Rebuild Tunnel
+            </template>
+
+            <template #content>
+                <div>
+                    Are you sure you want to Rebuild this tunnel?
+                </div>
+            </template>
+
+            <template #footer>
+                <PrimaryButton @click="rebuildTunnel">
+                    Remove
+                </PrimaryButton>
+                <SecondaryButton @click="confirmRebuildTunnelModal = false">
                     Close
                 </SecondaryButton>
             </template>

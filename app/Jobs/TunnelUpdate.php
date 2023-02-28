@@ -106,7 +106,7 @@ class TunnelUpdate implements ShouldQueue
                         $this->tunnelController->createBGPSession($this->connect,$bgpSession);
                         break;
                     case 3:
-                    case 7:
+                    case 4:
                         $this->tunnelController->delBGPSession($this->connect,$bgpSession);
                         break;
                 }

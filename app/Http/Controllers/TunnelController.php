@@ -186,7 +186,7 @@ class TunnelController extends Controller
         $tunnel->update(['status' => 7]);
 //        DeleteTunnel::dispatch($tunnel);
 //        $tunnel->delete();
-        return Redirect::back()->with('success', "Tunnel删除中");
+        return Redirect::back()->with('success', "Tunnel $tunnel->name Deleted");
     }
 
     /**
@@ -579,29 +579,29 @@ class TunnelController extends Controller
         $tunnel = $bgpSession->tunnel;
         $asn = $bgpSession->asn;
         $limit = $bgpSession->limit ?? $asn->limit;
-        $nodeComponent = NodeComponent::where('node_id',$tunnel->node_id)->where('component','FRR')->first();
-        if (!empty($nodeComponent) && !empty($nodeComponent->data)){
+        $nodeComponent = NodeComponent::where('node_id', $tunnel->node_id)->where('component', 'FRR')->first();
+        if (!empty($nodeComponent) && !empty($nodeComponent->data)) {
             $nodeASN = $nodeComponent->data['asn'];
-            if (empty($nodeASN)){
-                Log::error('Create BGP Session,Node ASN Not Found',$bgpSession->toArray());
+            if (empty($nodeASN)) {
+                Log::error('Create BGP Session,Node ASN Not Found', $bgpSession->toArray());
             }
-            $command = $frrController->createBGP($tunnel,$asn,$nodeASN,$limit);
-            Log::debug('Create BGP Session',[$command]);
+            $command = $frrController->createBGP($tunnel, $asn, $nodeASN, $limit);
+            Log::debug('Create BGP Session', [$command]);
             $result = $ssh->exec($command);
-            if (empty($result)){
+            if (empty($result)) {
                 $bgpSession->update([
                     'status' => 1
                 ]);
-            }else{
+            } else {
                 $bgpSession->update([
                     'status' => 4
                 ]);
-                Log::info('Create BGP Session,Exec Result',[$result]);
+                Log::info('Create BGP Session,Exec Result', [$result]);
             }
 
 
-        }else{
-            Log::info('Create BGP Session,Node Component Not Found',$bgpSession->toArray());
+        } else {
+            Log::info('Create BGP Session,Node Component Not Found', $bgpSession->toArray());
         }
 //        $node = $tunnel->node;
 //        $frrController->createBGP($tunnel,$asn)
@@ -610,28 +610,32 @@ class TunnelController extends Controller
 
     public function delBGPSession(SSH2 $ssh, BGPSession $bgpSession)
     {
-        switch ($bgpSession->status) {
-            case 3:
-                $frrController = new \App\Http\Controllers\NodeComponent\FRRController();
-                $tunnel = $bgpSession->tunnel;
-                $asn = $bgpSession->asn;
-                $limit = $bgpSession->limit ?? $asn->limit;
-                $nodeComponent = NodeComponent::where('node_id', $tunnel->node_id)->where('component', 'FRR')->first();
-                if (!empty($nodeComponent) && !empty($nodeComponent->data)) {
-                    $nodeASN = $nodeComponent->data['asn'];
-                    if (empty($nodeASN)) {
-                        Log::error('Del BGP Session,Node ASN Not Found', $bgpSession->toArray());
-                    }
-                    $command = $frrController->deleteBGP($tunnel, $asn, $nodeASN, $limit);
-                    Log::debug('Del BGP Session', [$command]);
-                    $result = $ssh->exec($command);
-                    if (empty($result)) {
+        $frrController = new \App\Http\Controllers\NodeComponent\FRRController();
+        $tunnel = $bgpSession->tunnel;
+        $nodeComponent = NodeComponent::where('node_id', $tunnel->node_id)->where('component', 'FRR')->first();
+        if (!empty($nodeComponent) && !empty($nodeComponent->data)) {
+            $nodeASN = $nodeComponent->data['asn'];
+            if (empty($nodeASN)) {
+                Log::error('Del BGP Session,Node ASN Not Found', $bgpSession->toArray());
+            }
+            $command = $frrController->deleteBGP($tunnel, $nodeASN);
+            Log::debug('Del BGP Session', [$command]);
+            $result = $ssh->exec($command);
+            if (empty($result)) {
+                switch ($bgpSession->status) {
+                    case 3:
+                        $bgpSession->update([
+                            'status' => 2
+                        ]);
+                        break;
+                    case 4:
                         $bgpSession->delete();
-                    } else {
-                        Log::info('Del BGP Session,Exec Result', [$result]);
-                    }
-                }
+                        break;
 
+                }
+            } else {
+                Log::info('Del BGP Session,Exec Result', [$result]);
+            }
         }
     }
 
@@ -738,6 +742,15 @@ class TunnelController extends Controller
         }
         //执行完成
         $tunnel->update(['status' => 1]);
+    }
+
+    public function rebuild(Tunnel $tunnel)
+    {
+        $this->authorize('update', $tunnel);
+        $tunnel->status = 3;
+        $tunnel->save();
+        return Redirect::back()->with('success', "Tunnel $tunnel->name Rebuild");
+
     }
 
 

@@ -25,15 +25,16 @@ class BGPController extends Controller
             $join->on('tunnels.node_id', '=', 'nodes_components.node_id')
                 ->where('nodes_components.component', '=', 'FRR')
                 ->where('nodes_components.status', '=', 'active');
-        })->select('*','tunnels.id as tunnel_id')->get();
+        })->select('*', 'tunnels.id as tunnel_id')->get();
         //Get Hava Nodes Components FRR Node
 //        $nodes = Node::active()->whereHas('components', function ($query) {
 //            $query->where('component', 'FRR')->where('status','active');
 //        })->get();
+        $bgp = BGPSession::where('user_id', $user->id)->with(['asn', 'tunnel'])->get();
         return Inertia::render('BGP/Index', [
             'asn' => $user->asn->where('validate', true),
             'tunnels' => $tunnels,
-            'bgp'=> $user->bgp,
+            'bgp' => $bgp,
         ]);
     }
 
@@ -48,5 +49,21 @@ class BGPController extends Controller
             'limit' => $asn->limit,
         ]);
 //        return redirect()->route('bgp.index');
+    }
+
+    public function rebuild(BGPSession $bgp)
+    {
+        $this->authorize('update', $bgp);
+        $bgp->status = 3;
+        $bgp->save();
+        return redirect()->route('bgp.index');
+    }
+
+    public function destroy(BGPSession $bgp)
+    {
+        $this->authorize('delete', $bgp);
+        $bgp->status = 4;
+        $bgp->save();
+        return redirect()->route('bgp.index');
     }
 }

@@ -68,6 +68,7 @@ class NodeController extends Controller
         BGPSession::where('bgp_sessions.status', 1)
             ->join('tunnels', 'tunnels.id', '=', 'bgp_sessions.tunnel_id')
             ->where('tunnels.node_id', $node->id)
+            ->select('*', 'bgp_sessions.id as bgp_session_id')
             ->chunk(50, function ($bgpSessions) use ($connect) {
                 foreach ($bgpSessions as $bgpSession) {
                     $this->updateBGPSessionStatusByTunnel($connect, $bgpSession);
@@ -81,13 +82,19 @@ class NodeController extends Controller
         $updateStatus = [];
         $updateRoute = [];
         if (isset($tunnel->ip4)) {
-            $v4 = (string)Network::parse("{$tunnel->ip4}/{$tunnel->ip4_cidr}")->getFirstIP()->next()->next();
+            $v4 = (string)Network::parse("$tunnel->ip4/$tunnel->ip4_cidr")->getFirstIP()->next()->next();
             $v4StatusResult = $connect->exec("sudo /usr/bin/vtysh -c 'show ip bgp neighbors $v4 json'");
             $v4ReceivedRouteResult = $connect->exec("sudo /usr/bin/vtysh -c 'show ip bgp neighbors $v4 received-routes json'");
             !$this->isJson($v4StatusResult) ?: $v4StatusResult = json_decode($v4StatusResult, true);
             !$this->isJson($v4ReceivedRouteResult) ?: $v4ReceivedRouteResult = json_decode($v4ReceivedRouteResult, true);
             if (is_array($v4StatusResult)) {
                 $updateStatus['v4'] = $v4StatusResult;
+                if (isset($v4StatusResult['bgpNoSuchNeighbor'])) {
+                    Log::debug('Update BGPSession Status Fail(no such neighbor) $v4StatusResult',
+                        ['bgpSession' => $session->toArray(), 'error' => $v4StatusResult]
+                    );
+                    $status = 2;
+                }
             } else {
                 Log::info('Update BGPSession Status Fail(json decode fail) $v4StatusResult',
                     ['bgpSession' => $session->toArray(), 'error' => $v4StatusResult]
@@ -109,6 +116,11 @@ class NodeController extends Controller
             !$this->isJson($v6ReceivedRouteResult) ?: $v6ReceivedRouteResult = json_decode($v6ReceivedRouteResult, true);
             if (is_array($v6StatusResult)) {
                 $updateStatus['v6'] = $v6StatusResult;
+                if (isset($v6StatusResult['bgpNoSuchNeighbor'])) {
+                    Log::debug('Update BGPSession Status Fail(no such neighbor) $v6StatusResult',
+                        ['bgpSession' => $session->toArray(), 'error' => $v6StatusResult]);
+                    $status = 2;
+                }
             } else {
                 Log::info('Update BGPSession Status Fail(json decode fail) $v6StatusResult',
                     ['bgpSession' => $session->toArray(), 'error' => $v6StatusResult]
@@ -121,13 +133,12 @@ class NodeController extends Controller
                     ['bgpSession' => $session->toArray(), 'error' => $v6ReceivedRouteResult]
                 );
             }
-
-            $session->update([
-                'session' => array_merge($session->session ?? [], $updateStatus),
-                'route' => array_merge($session->route ?? [], $updateRoute)
-            ]);
         }
-
+        BGPSession::find($session->bgp_session_id)->update([
+            'session' => $updateStatus,
+            'route' => $updateRoute,
+            'status' => $status ?? 1
+        ]);
 
 //        $newSessionStatus = [];
 //        foreach ($result as $k=>$v){
