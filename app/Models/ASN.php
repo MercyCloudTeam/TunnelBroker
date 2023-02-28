@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Dcat\Admin\Traits\HasDateTimeFormatter;
 
 use Illuminate\Database\Eloquent\Model;
 
 class ASN extends Model
 {
-	use HasDateTimeFormatter;
 
 	protected $table = 'asn';
 
@@ -16,8 +14,9 @@ class ASN extends Model
         'user_id','limit','validate','asn','loa','email_verified_at','email'
     ];
 
+    //get Validate is true
     public function scopeActive($query)
     {
-        return $query->where('validate', 1);
+        return $query->where('validate',true);
     }
 }

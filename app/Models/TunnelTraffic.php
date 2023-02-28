@@ -16,7 +16,7 @@ class TunnelTraffic extends Model
     ];
 
     protected $fillable = [
-        'tunnel_id', 'in', 'out', 'deadline'
+        'tunnel_id', 'in', 'out', 'deadline','user_id'
     ];
 
     public function tunnel()

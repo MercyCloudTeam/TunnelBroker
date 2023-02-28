@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BGPSession;
 use App\Models\IPAllocation;
 use App\Models\Node;
 use App\Models\Tunnel;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use IPTools\Network;
+use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Net\SSH2;
 use Throwable;
 
@@ -42,8 +44,8 @@ class NodeController extends Controller
                 $ssh->login($node->username, $node->password);
                 break;
             case "rsa":
-                //Todo RSA登录
-//                $ssh->login($node->username,new Crypt)
+                $key = PublicKeyLoader::load($node->password);
+                $ssh->login($node->username, $key);
                 break;
         }
         if ($ssh->isAuthenticated() && $ssh->isConnected()) {
@@ -56,6 +58,100 @@ class NodeController extends Controller
             Log::info('Login Server Fail', ['node' => $node->toArray(), 'error' => $ssh->getErrors()]);
             throw new Exception('Login Server Fail');
         }
+    }
+
+    public function updateBGPSessionStatus(SSH2 $connect, Node $node)
+    {
+        if ($node->components->where('component', 'FRR')->where('status', 'active')->isEmpty()) {
+            return;
+        }
+        BGPSession::where('bgp_sessions.status', 1)
+            ->join('tunnels', 'tunnels.id', '=', 'bgp_sessions.tunnel_id')
+            ->where('tunnels.node_id', $node->id)
+            ->select('*', 'bgp_sessions.id as bgp_session_id')
+            ->chunk(50, function ($bgpSessions) use ($connect) {
+                foreach ($bgpSessions as $bgpSession) {
+                    $this->updateBGPSessionStatusByTunnel($connect, $bgpSession);
+                }
+            });
+    }
+
+    public function updateBGPSessionStatusByTunnel(SSH2 $connect, BGPSession $session)
+    {
+        $tunnel = $session->tunnel;
+        $updateStatus = [];
+        $updateRoute = [];
+        if (isset($tunnel->ip4)) {
+            $v4 = (string)Network::parse("$tunnel->ip4/$tunnel->ip4_cidr")->getFirstIP()->next()->next();
+            $v4StatusResult = $connect->exec("sudo /usr/bin/vtysh -c 'show ip bgp neighbors $v4 json'");
+            $v4ReceivedRouteResult = $connect->exec("sudo /usr/bin/vtysh -c 'show ip bgp neighbors $v4 received-routes json'");
+            !$this->isJson($v4StatusResult) ?: $v4StatusResult = json_decode($v4StatusResult, true);
+            !$this->isJson($v4ReceivedRouteResult) ?: $v4ReceivedRouteResult = json_decode($v4ReceivedRouteResult, true);
+            if (is_array($v4StatusResult)) {
+                $updateStatus['v4'] = $v4StatusResult;
+                if (isset($v4StatusResult['bgpNoSuchNeighbor'])) {
+                    Log::debug('Update BGPSession Status Fail(no such neighbor) $v4StatusResult',
+                        ['bgpSession' => $session->toArray(), 'error' => $v4StatusResult]
+                    );
+                    $status = 2;
+                }
+            } else {
+                Log::info('Update BGPSession Status Fail(json decode fail) $v4StatusResult',
+                    ['bgpSession' => $session->toArray(), 'error' => $v4StatusResult]
+                );
+            }
+            if (is_array($v4ReceivedRouteResult)) {
+                $updateRoute['v4'] = $v4ReceivedRouteResult;
+            } else {
+                Log::info('Update BGPSession Status Fail(json decode fail) $v4ReceivedRouteResult',
+                    ['bgpSession' => $session->toArray(), 'error' => $v4ReceivedRouteResult]
+                );
+            }
+        }
+        if (isset($tunnel->ip6)) {
+            $v6 = (string)Network::parse("$tunnel->ip6/$tunnel->ip6_cidr")->getFirstIP()->next()->next();
+            $v6StatusResult = $connect->exec("sudo /usr/bin/vtysh -c 'show ip bgp neighbors $v6 json'");
+            $v6ReceivedRouteResult = $connect->exec("sudo /usr/bin/vtysh -c 'show ip bgp neighbors $v6 received-routes json'");
+            !$this->isJson($v6StatusResult) ?: $v6StatusResult = json_decode($v6StatusResult, true);
+            !$this->isJson($v6ReceivedRouteResult) ?: $v6ReceivedRouteResult = json_decode($v6ReceivedRouteResult, true);
+            if (is_array($v6StatusResult)) {
+                $updateStatus['v6'] = $v6StatusResult;
+                if (isset($v6StatusResult['bgpNoSuchNeighbor'])) {
+                    Log::debug('Update BGPSession Status Fail(no such neighbor) $v6StatusResult',
+                        ['bgpSession' => $session->toArray(), 'error' => $v6StatusResult]);
+                    $status = 2;
+                }
+            } else {
+                Log::info('Update BGPSession Status Fail(json decode fail) $v6StatusResult',
+                    ['bgpSession' => $session->toArray(), 'error' => $v6StatusResult]
+                );
+            }
+            if (is_array($v6ReceivedRouteResult)) {
+                $updateRoute['v6'] = $v6ReceivedRouteResult;
+            } else {
+                Log::info('Update BGPSession Status Fail(json decode fail) $v6ReceivedRouteResult',
+                    ['bgpSession' => $session->toArray(), 'error' => $v6ReceivedRouteResult]
+                );
+            }
+        }
+        BGPSession::find($session->bgp_session_id)->update([
+            'session' => $updateStatus,
+            'route' => $updateRoute,
+            'status' => $status ?? 1
+        ]);
+
+//        $newSessionStatus = [];
+//        foreach ($result as $k=>$v){
+//            $jsonDecode = json_decode($v, true);
+//            if (empty($jsonDecode)){
+//                Log::info('Update BGPSession Status Fail(json decode fail)', ['bgpSession' => $session->toArray(), 'error' => $v]);
+//            }else{
+//                $newSessionStatus[$k] = $jsonDecode;
+//            }
+//        }
+//        $session->update([
+//            'session'
+//        ]);
     }
 
     public function calculationTraffic(SSH2 $connect, Node $node)
@@ -93,25 +189,6 @@ class NodeController extends Controller
         }
     }
 
-//    protected function cacheTraffic($name, $traffic, $old)
-//    {
-//        //如果网卡重启的过快或次数过多则无法记录该时间段的流量
-//        if (Cache::has($name)) {//存在
-//            $cache = Cache::get($name);
-//            if ($cache > $traffic) {//缓存的流量比获取的流量的话则代表网卡重启过
-//                //将已经缓存的流量计入
-//                Cache::put($name, $traffic);
-//                return bcadd($old, $cache);
-//            } elseif ($cache < $traffic) {//流量不变的情况下无需更新
-//                Cache::put($name, $traffic);
-//                //将更新流量计入
-//                return bcadd($old, bcsub($traffic, $cache));
-//            }
-//        } else {
-//            Cache::put($name, $traffic);
-//        }
-//        return $old;//没有则返回原本
-//    }
 
     /**
      * @param Tunnel $tunnel
@@ -121,7 +198,7 @@ class NodeController extends Controller
      */
     public function updateTraffic(Tunnel $tunnel, int $in, int $out)
     {
-        $cacheName = "$tunnel-traffic";
+        $cacheName = "$tunnel->interface-traffic";
         $cacheTraffic = json_decode(Cache::get($cacheName), true);
         if (empty($cacheTraffic) || $cacheTraffic['in'] > $in || $cacheTraffic['out'] > $out) {
             //缓存比获取到的大则表面网卡被重启过(那么未捕获到的流量就不计算了)
@@ -135,14 +212,16 @@ class NodeController extends Controller
                 'last_time' => time()
             ];
         } else {
+            $useTrafficIn = $in - $cacheTraffic['in'];
+            $useTrafficOut = $out - $cacheTraffic['out'];
+
             $cacheTraffic = array_merge($cacheTraffic, [
                 'in' => $in,
                 'out' => $out,
                 'last_time' => time()
             ]);
 //            $startTime = $cacheTraffic['start_time'];
-            $useTrafficIn = $in - $cacheTraffic['in'];
-            $useTrafficOut = $out - $cacheTraffic['out'];
+
         }
         Cache::put($cacheName, json_encode($cacheTraffic));
 //        $startTime = Carbon::createFromTimestamp($startTime);
@@ -150,19 +229,21 @@ class NodeController extends Controller
         //get lastest tunnel traffic
         $tunnelTraffic = TunnelTraffic::where([
             ['tunnel_id', '=', $tunnel->id],
-            ['deadline', '>=', time()]
+            ['deadline', '>=', Carbon::now()]
         ])->latest()->first();
+
         if (empty($tunnelTraffic)) {
             //get user reset day
             $userPlan = $tunnel->user->userPlan;
             $resetDay = $userPlan->reset_day;
             TunnelTraffic::create([
+                'user_id' => $tunnel->user->id,
                 'tunnel_id' => $tunnel->id,
-                'deadline' => Carbon::now()->addMonth()->day($resetDay),
-                'in'=>$useTrafficIn,
-                'out'=>$useTrafficOut,
+                'deadline' => Carbon::now()->addMonth()->day($resetDay)->hour(0)->minute(0)->second(0),
+                'in' => $useTrafficIn,
+                'out' => $useTrafficOut,
             ]);
-        }else{
+        } else {
             $tunnelTraffic->update([
                 'in' => $tunnelTraffic->in + $useTrafficIn,
                 'out' => $tunnelTraffic->out + $useTrafficOut,

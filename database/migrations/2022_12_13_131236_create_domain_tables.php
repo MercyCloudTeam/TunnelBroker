@@ -38,19 +38,11 @@ return new class extends Migration {
             $table->id();
             $table->bigInteger('node_id');
             $table->string('component');
-            $table->json('data');
+            $table->json('data')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
 
-        Schema::create('nodes_components_data', function (Blueprint $table) {
-            $table->id();
-            $table->bigInteger('node_id');
-            $table->string('component');
-            $table->string('key');
-            $table->string('value');
-            $table->timestamps();
-        });
 
     }
 
@@ -64,6 +56,5 @@ return new class extends Migration {
         Schema::dropIfExists('domains');
         Schema::dropIfExists('domain_resource_records');
         Schema::dropIfExists('nodes_components');
-        Schema::dropIfExists('nodes_components_data');
     }
 };

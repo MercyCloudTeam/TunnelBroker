@@ -15,7 +15,8 @@ class Node extends Model
 
     protected $fillable = [
         'ip','title','username','password','login_type','port',
-        'status','limit','config','public_ip','ip6','public_ip6'
+        'status','limit','config','public_ip','ip6','public_ip6',
+        'country'
     ];
 
     protected $hidden = [
@@ -43,6 +44,15 @@ class Node extends Model
         return $this->hasMany('App\Models\Tunnel');
     }
 
+    public function components()
+    {
+        return $this->hasMany(NodeComponent::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 1);
+    }
 
 
 

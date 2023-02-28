@@ -3,6 +3,8 @@ import { Head, Link } from '@inertiajs/inertia-vue3';
 import Header from "@/Components/Header.vue";
 import NodeCard from "@/Components/NodeCard.vue";
 import { BoltIcon, CubeIcon, GlobeAltIcon, ScaleIcon } from '@heroicons/vue/24/outline'
+import CountryFlag from 'vue-country-flag-next'
+
 const features = [
     {
         name: 'Global Nodes',
@@ -70,5 +72,9 @@ defineProps({
             <NodeCard v-for="node in nodes" :key="node.id" :node="node" />
         </div>
     </div>
-
+    <footer class="footer footer-center p-4 bg-white text-base-content">
+        <div>
+            <p>Copyright © 2023 - All right reserved by TunnelBroker</p>
+        </div>
+    </footer>
 </template>

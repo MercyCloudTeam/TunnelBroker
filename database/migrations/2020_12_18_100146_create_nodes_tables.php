@@ -18,11 +18,11 @@ class CreateNodesTables extends Migration
             $table->ipAddress('ip');
             $table->string('username');
             $table->string('title');
-            $table->string('county', 3)->nullable();
+            $table->string('country', 3)->nullable();
             $table->string('password')->nullable();
             $table->string('login_type');//密钥登录还是密码登录
             $table->string('port');
-            $table->string('status')->default(1);
+            $table->integer('status')->default(1);
             $table->integer('limit');
             $table->boolean('public')->default(true);
             $table->json('config')->nullable();
@@ -45,6 +45,7 @@ class CreateNodesTables extends Migration
             $table->ipAddress('ip');
             $table->integer('cidr');//这个网段的子网網掩
             $table->string('type');//v4 v6
+            $table->boolean('intranet')->default(false);//是否是内网地址
             $table->timestamps();
         });
 
@@ -56,6 +57,7 @@ class CreateNodesTables extends Migration
             $table->integer('cidr');//这个网段的子网網掩
             $table->integer('allocation_size')->nullable();//分配的子网
             $table->string('ip_type')->default('ipv6');//ip類型 ipv4 or ipv6
+            $table->boolean('intranet')->default(false);//是否是内网地址
             $table->boolean('generated')->default(true);//自动生成分配
             $table->string('type');
             $table->timestamps();

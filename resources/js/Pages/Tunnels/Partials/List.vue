@@ -23,15 +23,39 @@ defineProps({
 
 const confirmTunnelDeletionModal = ref(false);
 const displayTunnelInfoModal = ref(false);
+const confirmRebuildTunnelModal = ref(false);
 
 const confirmTunnelDeletion = (tunnel) => {
     confirmTunnelDeletionModal.value = true;
     delTunnelForm.tunnel = tunnel;
 }
+const confirmTunnelRebuild = (tunnel) => {
+    confirmRebuildTunnelModal.value = true;
+    rebuildTunnelForm.tunnel = tunnel;
+}
 
 const displayTunnelInfo = (tunnel) => {
     displayTunnelInfoModal.value = true;
     detailTunnel.tunnel = tunnel;
+}
+
+const rebuildTunnel = ()=>{
+    confirmRebuildTunnelModal.value = false;
+    rebuildTunnelForm.put(route('tunnel.rebuild', rebuildTunnelForm.tunnel.id), {
+        preserveScroll: true,
+        errorBag: 'rebuildTunnel',
+        onSuccess: () => {
+            rebuildTunnelForm.reset();
+            Swal.fire({
+                icon: 'success',
+                title: 'Tunnel rebuild',
+                text: 'Tunnel rebuild successfully,Tunnel will be rebuild in 1 minute',
+            })
+        },
+        onError: () => {
+            console.log(rebuildTunnelForm.errors.rebuildTunnel);
+        },
+    });
 }
 
 const deleteTunnel = () => {
@@ -58,6 +82,10 @@ const delTunnelForm = useForm({
     tunnel: null,
 })
 
+const rebuildTunnelForm = useForm({
+    tunnel: null,
+})
+
 const detailTunnel = useForm({
     tunnel: null,
 })
@@ -73,6 +101,11 @@ const getStatusDisplay = (status) => {
             return {
                 'class': 'text-yellow-600',
                 'text': 'Waiting Create'
+            };
+        case 3:
+            return {
+                'class': 'text-yellow-600',
+                'text': 'Rebuilding'
             };
         case 4:
             return {
@@ -111,7 +144,6 @@ const getStatusDisplay = (status) => {
                 </template>
 
                 <template #description>
-                    You
                 </template>
 
                 <template #content>
@@ -159,9 +191,14 @@ const getStatusDisplay = (status) => {
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2 text-gray-700"> {{ tunnel.mode }}</td>
                                 <td class="whitespace-nowrap px-4 py-2 text-right">
+
                                     <button class="cursor-pointer ml-6 text-sm text-blue-500"
                                             @click="displayTunnelInfo(tunnel)">
                                         Detail
+                                    </button>
+                                    <button class="cursor-pointer ml-6 text-sm text-warning"
+                                            @click="confirmTunnelRebuild(tunnel)">
+                                        Rebuild
                                     </button>
                                     <button v-if="tunnel.status !== 7" class="cursor-pointer ml-6 text-sm text-red-500"
                                             @click="confirmTunnelDeletion(tunnel)">
@@ -196,6 +233,26 @@ const getStatusDisplay = (status) => {
                 </SecondaryButton>
             </template>
         </DialogModal>
+        <DialogModal :show="confirmRebuildTunnelModal" @close="confirmRebuildTunnelModal = false">
+            <template #title>
+                Rebuild Tunnel
+            </template>
+
+            <template #content>
+                <div>
+                    Are you sure you want to Rebuild this tunnel?
+                </div>
+            </template>
+
+            <template #footer>
+                <PrimaryButton @click="rebuildTunnel">
+                    Remove
+                </PrimaryButton>
+                <SecondaryButton @click="confirmRebuildTunnelModal = false">
+                    Close
+                </SecondaryButton>
+            </template>
+        </DialogModal>
 
         <DialogModal :show="displayTunnelInfoModal" @close="displayTunnelInfoModal = false">
             <template #title>
@@ -205,17 +262,21 @@ const getStatusDisplay = (status) => {
             <template #content>
                 <div>
 
-                    <p> Remote Address: {{ detailTunnel.tunnel.remote }} </p>
-
+                    <p>Remote Address: {{ detailTunnel.tunnel.remote }} </p>
+                    <p>IPV4 Address: {{ detailTunnel.tunnel.ip4 }}</p>
+                    <p>IPV6 Address: {{ detailTunnel.tunnel.ip6 }}</p>
+                    <p>Server Port: {{ detailTunnel.tunnel.srcport }}</p>
+                    <p>Local Port: {{ detailTunnel.tunnel.dstport }}</p>
                     <p>Protocol: {{ detailTunnel.tunnel.mode }}</p>
                     <p>Status: <span
                         :class="getStatusDisplay(detailTunnel.tunnel.status).class">{{ getStatusDisplay(detailTunnel.tunnel.status).text }}</span>
                     </p>
                     <p>Created At: {{ detailTunnel.tunnel.created_at }}</p>
                     <div v-if="detailTunnel.tunnel.config">
-                        <p v-if="detailTunnel.tunnel.config.local.pubkey">Local Public Key: {{detailTunnel.tunnel.config.local.pubkey}}</p>
-                        <p v-if="detailTunnel.tunnel.config.local.privkey">Local Privacy Key: {{detailTunnel.tunnel.config.local.privkey}}</p>
-                        <p v-if="detailTunnel.tunnel.config.remote.pubkey">Server Public Key: {{detailTunnel.tunnel.config.remote.pubkey}}</p>
+                        <p v-if="detailTunnel.tunnel.config.local.pubkey">Local Public Key: {{detailTunnel.tunnel.config.remote.pubkey}}</p>
+<!--                        <p v-if="detailTunnel.tunnel.config.local.privkey">Local Privacy Key: {{detailTunnel.tunnel.config.local.privkey}}</p>-->
+                        <p v-if="detailTunnel.tunnel.config.remote.pubkey">Local Privacy Key: {{detailTunnel.tunnel.config.remote.privkey}}</p>
+                        <p v-if="detailTunnel.tunnel.config.local.pubkey">Server Public Key: {{detailTunnel.tunnel.config.local.pubkey}}</p>
                     </div>
                 </div>
             </template>

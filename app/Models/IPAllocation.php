@@ -12,7 +12,7 @@ class IPAllocation extends Model
     protected $table = 'ip_allocation';
 
     protected $fillable = [
-        'node_id','ip_pool_id','tunnel_id','ip','cidr','type','last_section'
+        'node_id','ip_pool_id','tunnel_id','ip','cidr','type','intranet'
     ];
 
     public function scopeOfActive($query, $node)

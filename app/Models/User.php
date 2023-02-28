@@ -11,7 +11,7 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use OwenIt\Auditing\Contracts\Auditable;
 
-class User extends Authenticatable implements Auditable
+class User extends Authenticatable implements Auditable,MustVerifyEmail
 {
     use HasApiTokens;
     use HasFactory;
@@ -82,4 +82,18 @@ class User extends Authenticatable implements Auditable
         return $this->hasOne(UserPlan::class, 'user_id', 'id');
     }
 
+    public function asn()
+    {
+        return $this->hasMany(ASN::class, 'user_id', 'id');
+    }
+
+    public function ipAllocation()
+    {
+        return $this->hasManyThrough(IPAllocation::class, Tunnel::class, 'user_id', 'tunnel_id', 'id', 'id');
+    }
+
+    public function bgp()
+    {
+        return $this->hasMany(BGPSession::class, 'user_id', 'id');
+    }
 }

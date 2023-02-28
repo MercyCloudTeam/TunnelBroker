@@ -22,14 +22,15 @@ class IPAllocationController extends AdminController
             $grid->column('node_id');
             $grid->column('tunnel_id');
             $grid->column('ip');
+            $grid->column('intranet');
             $grid->column('cidr');
             $grid->column('type');
             $grid->column('created_at');
             $grid->column('updated_at')->sortable();
-        
+
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->equal('id');
-        
+
             });
         });
     }
@@ -48,6 +49,7 @@ class IPAllocationController extends AdminController
             $show->field('node_id');
             $show->field('tunnel_id');
             $show->field('ip');
+            $show->field('intranet');
             $show->field('cidr');
             $show->field('type');
             $show->field('created_at');
@@ -69,7 +71,8 @@ class IPAllocationController extends AdminController
             $form->text('ip');
             $form->text('cidr');
             $form->text('type');
-        
+            $form->switch('intranet');
+
             $form->display('created_at');
             $form->display('updated_at');
         });

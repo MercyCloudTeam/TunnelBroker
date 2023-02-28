@@ -11,6 +11,8 @@ tunnelbroker ALL=NOPASSWD: /sbin/ifconfig
 tunnelbroker ALL=NOPASSWD: /sbin/route
 tunnelbroker ALL=NOPASSWD: /usr/bin/wg
 tunnelbroker ALL=NOPASSWD: /usr/bin/wg-quick
+tunnelbroker ALL=NOPASSWD: /sbin/tc
+tunnelbroker ALL=NOPASSWD: /usr/bin/vtysh
 " > /etc/sudoers.d/tunnelbroker
 
 

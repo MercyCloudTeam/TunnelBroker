@@ -15,7 +15,8 @@ return new class extends Migration
     {
         Schema::create('tunnel_traffic', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tunnel_id');
+            $table->foreignId('tunnel_id')->nullable();
+            $table->foreignId('user_id');
             $table->bigInteger('in')->default(0);//入网流量
             $table->bigInteger('out')->default(0);//出网流量
             //deadline

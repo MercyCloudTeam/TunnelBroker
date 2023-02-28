@@ -36,12 +36,22 @@ class Controller extends BaseController
      * @param int $httpStatus
      * @return JsonResponse
      */
-    public function jsonResult($code ="ERROR" , array $data=[],  $msg = '',  $httpStatus = 200)
+    public function jsonResult($code = "ERROR", array $data = [], $msg = '', $httpStatus = 200)
     {
         return new JsonResponse([
-            'data'=>$data,
-            'status'=>config('status.code'.$code),
-            'msg'=>$msg
-        ],$httpStatus);
+            'data' => $data,
+            'status' => config('status.code' . $code),
+            'msg' => $msg
+        ], $httpStatus);
+    }
+
+    /**
+     * @param $string
+     * @return bool
+     */
+    public function isJson($string): bool
+    {
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE);
     }
 }

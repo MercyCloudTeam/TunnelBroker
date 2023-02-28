@@ -7,11 +7,15 @@ use App\Http\Requests\TunnelRequest;
 use App\Http\Resources\TunnelResource;
 use App\Http\Resources\TunnelsCollectionResource;
 use App\Models\ASN;
+use App\Models\BGPSession;
 use App\Models\IPAllocation;
 use App\Models\Node;
+use App\Models\NodeComponent;
 use App\Models\Tunnel;
 use App\Models\TunnelTraffic;
+use App\Models\User;
 use App\Rules\TunnelIP;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +47,7 @@ class TunnelController extends Controller
      * 详细页面
      * @param Tunnel $tunnel
      * @return \Inertia\Response
-     * @throws \Exception
+     * @throws Exception
      */
     public function show(Tunnel $tunnel)
     {
@@ -114,6 +118,21 @@ class TunnelController extends Controller
     }
 
     /**
+     * Byte转人话
+     * @param $bytes
+     * @return string
+     */
+    public static function ht($bytes)
+    {
+        //Byte to human
+        $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        for ($i = 0; $bytes > 1024; $i++) {
+            $bytes /= 1024;
+        }
+        return round($bytes, 2) . ' ' . $units[$i];
+    }
+
+    /**
      * 带宽转人话
      * @param $size
      * @return string
@@ -156,7 +175,7 @@ class TunnelController extends Controller
      * 删除Tunnel
      * @param Tunnel $tunnel
      * @return \Illuminate\Http\RedirectResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function destroy(Tunnel $tunnel)
     {
@@ -164,11 +183,10 @@ class TunnelController extends Controller
         //清理IP分配
 
         IPAllocation::where('tunnel_id', $tunnel->id)->update(['tunnel_id' => null]);//IP重新进入分配表
-
         $tunnel->update(['status' => 7]);
 //        DeleteTunnel::dispatch($tunnel);
 //        $tunnel->delete();
-        return Redirect::back()->with('success', "Tunnel删除中");
+        return Redirect::back()->with('success', "Tunnel $tunnel->name Deleted");
     }
 
     /**
@@ -197,15 +215,9 @@ class TunnelController extends Controller
     {
         $node = Node::find($request->node);
         $user = Auth::user();
-        if (!empty($request->asn)) {
-            $asn = ASN::find($request->asn);
-            if (!$asn->validate || $asn->user_id != $user->id) {
-                return throw ValidationException::withMessages([
-                    'asn' => ['ASN is not available'],
-                ]);
-            }
-        }
-        if ($user->tunnels->count() >= env('DEFAULT_USER_LIMIT')) {
+
+        $userTunnelLimit = $user->plan->limit ?? env('DEFAULT_USER_LIMIT');
+        if ($user->tunnels->count() >= $userTunnelLimit) {
             return throw ValidationException::withMessages([
                 'tunnel' => ["You've created too many Tunnels"],
             ]);
@@ -227,7 +239,8 @@ class TunnelController extends Controller
                         $userPubKeyCurve25519 = sodium_crypto_sign_ed25519_pk_to_curve25519($userPubKey);
                         $userPrivKeyCurve25519 = sodium_crypto_sign_ed25519_sk_to_curve25519($userPrivKey);
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
+                    Log::error($e->getMessage(), ['trace' => $e->getTraceAsString()]);
                     return throw ValidationException::withMessages([
                         'tunnel' => ["WireGuard key generation failed"],
                     ]);
@@ -244,8 +257,11 @@ class TunnelController extends Controller
                         'local' => ['pubkey' => base64_encode($curve25519PubKey), 'privkey' => base64_encode($curve25519PrivKey)],
                     ];
                 }
-
                 break;
+        }
+
+        if ($request->force_public_ip_address ?? false) {
+            $config['force_public_ip_address'] = true;
         }
 
         $tunnel = Tunnel::create([
@@ -260,10 +276,14 @@ class TunnelController extends Controller
 
         ]);
 
-        if ($tunnel) {
+        if (isset($tunnel)) {
             return $tunnel;
         }
-        return "ERROR";
+
+        Log::error("Tunnel creation failed", ['request' => $request->all()]);
+        return throw ValidationException::withMessages([
+            'tunnel' => ["Tunnel creation failed"],
+        ]);
 
     }
 
@@ -274,7 +294,7 @@ class TunnelController extends Controller
      */
     public function deleteTunnelCommand(Tunnel $tunnel)
     {
-        return "sudo ip link delete {$tunnel->interface}";
+        return "sudo ip link delete $tunnel->interface";
     }
 
     /**
@@ -362,8 +382,8 @@ class TunnelController extends Controller
                         $pub = "/home/tunnelbroker/wireguard-key/$tunnel->interface.pub.key";
                         $command[] = "sudo ip link add dev $tunnel->interface type wireguard";
                         $command[] = "umask 077";
-                        $command[] = "echo $localPubKey > $privateKey";
-                        $command[] = "echo $localPrivKey > $pub";
+                        $command[] = "echo $localPrivKey > $privateKey";
+                        $command[] = "echo $localPubKey > $pub";
                         $command[] = "sudo wg set $tunnel->interface listen-port $tunnel->srcport private-key $privateKey peer $remotePubKey allowed-ips $allowedIP endpoint $tunnel->remote:$tunnel->dstport";
                         break;
                     case 'change':
@@ -425,7 +445,7 @@ class TunnelController extends Controller
     /**
      * @throws \Throwable
      */
-    public function assignIP(Tunnel $tunnel)
+    public function assignIP(Tunnel $tunnel, bool $forcePublic = false)
     {
         $v6 = false;
         $v4 = false;
@@ -458,69 +478,165 @@ class TunnelController extends Controller
             default:
                 //神秘隧道类型
                 $tunnel->update(['status' => 7]);
-                throw new \Exception('Node IP address exhaustion');
+                throw new Exception('Node IP address exhaustion');
+        }
+
+        //Check Ip Address Limit
+        $user = User::find($tunnel->user_id);
+        $plan = $user->plan;
+        $ipv4Limit = $plan->ipv4_num;
+        $ipv6Limit = $plan->ipv6_num;
+        $usageIPAddress = (new UserController())->getIpAddressUsage($user);
+        if ($usageIPAddress['ipv4'] >= $ipv4Limit) {
+            $tunnel->update(['status' => 4]);
+            return false;
+        }
+        if ($usageIPAddress['ipv6'] >= $ipv6Limit) {
+            $tunnel->update(['status' => 4]);
+            return false;
         }
 
         DB::beginTransaction();
         $ips = IPAllocation::ofActive($tunnel->node_id);
-        $update = [];
-        if ($ips->count() == 0) {//IP数量为0
-            $update['status'] = 4;
-            $tunnel->update($update);
-            throw new \Exception('Node IP address exhaustion');
-        } else {
-            $update['interface'] = env('TUNNEL_NAME_PREFIX', 'tun') . $tunnel->id;
+        if ($forcePublic) {
+            $ips = $ips->where('intranet', false);
         }
+        $ips = $ips->get();
+        $update = [];
+        $update['interface'] = env('TUNNEL_NAME_PREFIX', 'tun') . $tunnel->id;
 
         if ($port) {
             $port = $this->assignPort($tunnel);
-            if (!$port) {
+            if (empty($port)) {
+                $update['status'] = 4;
+                $tunnel->update($update);
                 DB::rollBack();
-                throw new \Exception('No available port');
+                return false;
             }
             $update['srcport'] = $port;
         }
+
         if ($v6) {
-            $ipv6 = $ips->where('type', 'ipv6')->limit(1)->get();
-            if (!$ipv6->isEmpty()) {
-                $ipv6 = $ipv6->first();
-                $update['ip6'] = (string)Network::parse("{$ipv6->ip}/{$ipv6->cidr}")->getFirstIP();
+            $ipv6 = $ips->where('type', 'ipv6')->first();
+            if (!empty($ipv6)) {
+                $update['ip6'] = (string)Network::parse("$ipv6->ip/$ipv6->cidr")->getFirstIP();
                 $update['ip6_cidr'] = $ipv6->cidr;
-//                $update['ip6_rdns'] = Network::parse($ipv6->ip."1")->r
-                $ipv6->update(['tunnel_id' => $tunnel->id]);
+                IPAllocation::where('id', $ipv6->id)->update(['tunnel_id' => $tunnel->id]);
+            } else {
+                $update['status'] = 4;
+                $tunnel->update($update);
+                DB::rollBack();
+                return false;
+//                throw new Exception('Node IP address exhaustion IPV6');
             }
         }
         if ($v4) {
-            $ipv4 = $ips->where('type', 'ipv4')->limit(1)->get();
-            if (!$ipv4->isEmpty()) {
-                $ipv4 = $ipv4->first();
-                $update['ip4'] = (string)Network::parse("{$ipv4->ip}/{$ipv4->cidr}")->getFirstIP();
+            $ipv4 = $ips->where('type', 'ipv4')->first();
+            if (!empty($ipv4)) {
+                $update['ip4'] = (string)Network::parse("$ipv4->ip/$ipv4->cidr")->getFirstIP();
                 $update['ip4_cidr'] = $ipv4->cidr;
-                $ipv4->update(['tunnel_id' => $tunnel->id]);
+                IPAllocation::where('id', $ipv4->id)->update(['tunnel_id' => $tunnel->id]);
+            } else {
+                $update['status'] = 4;
+                $tunnel->update($update);
+                DB::rollBack();
+                return false;
+//                throw new Exception('Node IP address exhaustion IPV4');
             }
         }
 
+
         try {
             $tunnel->update($update);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
         DB::commit();
+        return true;
         //v6默认使用 ::2  v4则按CIDR大小使用第一个IP
     }
 
     public function delTunnel(SSH2 $ssh, Tunnel $tunnel)
     {
-        if ($tunnel->status == 7) {
-            $result[] = $ssh->exec($this->deleteTunnelCommand($tunnel));//执行创建Tunnel命令
-//            if (!empty($tunnel->asn_id)) {//清理BGP配置
-//                $result[] = $ssh->exec((new FRRController())->deleteBGP($tunnel));
-//            }
-            Log::debug('DelTunnel Exec result', [$result]);
-            $tunnel->delete();
+        switch ($tunnel->status) {
+            case 7:
+                //Del Tunnel
+                $result[] = $ssh->exec($this->deleteTunnelCommand($tunnel));
+                Log::debug('DelTunnel Exec result', [$result]);
+                $tunnel->delete();
+                break;
+            case 3:
+                //Rebuild Tunnel
+                $ssh->exec($this->deleteTunnelCommand($tunnel));
+                break;
         }
+    }
 
+    public function createBGPSession(SSH2 $ssh, BGPSession $bgpSession)
+    {
+        $frrController = new \App\Http\Controllers\NodeComponent\FRRController();
+        $tunnel = $bgpSession->tunnel;
+        $asn = $bgpSession->asn;
+        $limit = $bgpSession->limit ?? $asn->limit;
+        $nodeComponent = NodeComponent::where('node_id', $tunnel->node_id)->where('component', 'FRR')->first();
+        if (!empty($nodeComponent) && !empty($nodeComponent->data)) {
+            $nodeASN = $nodeComponent->data['asn'];
+            if (empty($nodeASN)) {
+                Log::error('Create BGP Session,Node ASN Not Found', $bgpSession->toArray());
+            }
+            $command = $frrController->createBGP($tunnel, $asn, $nodeASN, $limit);
+            Log::debug('Create BGP Session', [$command]);
+            $result = $ssh->exec($command);
+            if (empty($result)) {
+                $bgpSession->update([
+                    'status' => 1
+                ]);
+            } else {
+                $bgpSession->update([
+                    'status' => 4
+                ]);
+                Log::info('Create BGP Session,Exec Result', [$result]);
+            }
+
+
+        } else {
+            Log::info('Create BGP Session,Node Component Not Found', $bgpSession->toArray());
+        }
+//        $node = $tunnel->node;
+//        $frrController->createBGP($tunnel,$asn)
+
+    }
+
+    public function delBGPSession(SSH2 $ssh, BGPSession $bgpSession)
+    {
+        $frrController = new \App\Http\Controllers\NodeComponent\FRRController();
+        $tunnel = $bgpSession->tunnel;
+        $nodeComponent = NodeComponent::where('node_id', $tunnel->node_id)->where('component', 'FRR')->first();
+        if (!empty($nodeComponent) && !empty($nodeComponent->data)) {
+            $nodeASN = $nodeComponent->data['asn'];
+            if (empty($nodeASN)) {
+                Log::error('Del BGP Session,Node ASN Not Found', $bgpSession->toArray());
+            }
+            $command = $frrController->deleteBGP($tunnel, $nodeASN);
+            Log::debug('Del BGP Session', [$command]);
+            $result = $ssh->exec($command);
+            if (empty($result)) {
+                switch ($bgpSession->status) {
+                    case 3:
+                        $bgpSession->update([
+                            'status' => 2
+                        ]);
+                        break;
+                    case 4:
+                        $bgpSession->delete();
+                        break;
+
+                }
+            } else {
+                Log::info('Del BGP Session,Exec Result', [$result]);
+            }
+        }
     }
 
     public function changeTunnelIP(SSH2 $ssh, Tunnel $tunnel)
@@ -542,6 +658,12 @@ class TunnelController extends Controller
     }
 
 
+    public function rebuildTunnel(SSH2 $ssh, Tunnel $tunnel)
+    {
+        $this->delTunnel($ssh, $tunnel);
+        $this->createTunnelAction($ssh, $tunnel);
+    }
+
     public function createTunnel(SSH2 $ssh, Tunnel $tunnel)
     {
         if ($tunnel->status == 2) {
@@ -554,14 +676,20 @@ class TunnelController extends Controller
                 ]);
             } else {
                 try {
-                    $this->assignIP($tunnel);
+                    if ($tunnel->config['force_public_ip_address'] ?? false) {
+                        $bool = $this->assignIP($tunnel, true);
+                    } else {
+                        $bool = $this->assignIP($tunnel);
+                    }
                 } catch (Throwable $e) {
                     \Illuminate\Support\Facades\Log::error('Tunnel IP allocation failed', [$e->getMessage(), $tunnel->toArray()]);
                     $tunnel->update(['status' => 4]);
                     return;
                 }
                 $tunnel->refresh();//重新加载模型
-                $this->createTunnelAction($ssh, $tunnel);
+                if ($bool) {
+                    $this->createTunnelAction($ssh, $tunnel);
+                }
 
             }
         }
@@ -595,15 +723,34 @@ class TunnelController extends Controller
             $ip4 = (string)Network::parse("$tunnel->ip4/{$tunnel->ip4_cidr}")->getFirstIP()->next();
             $result[] = $ssh->exec("sudo ip addr add $ip4/$tunnel->ip4_cidr dev $tunnel->interface");
         }
-        Log::debug("Create Tunnel Result", $result);
+        //Speed Limit
+        $plan = User::find($tunnel->user_id)->plan;
+        $speed = $plan->speed;
+        if ($speed > 0) {
+            if ($tunnel->status != 2) {
+                $result[] = $ssh->exec("tc qdisc del dev $tunnel->interface ingress");
+            }
+            $result[] = $ssh->exec("sudo tc qdisc add dev $tunnel->interface ingress handle ffff:");
+            $result[] = $ssh->exec("sudo tc filter add dev $tunnel->interface parent ffff: protocol all prio 1 basic police rate {$speed}Mbit burst 10Mbit mtu 65535 drop");
+        }
+
+        Log::debug("Create Tunnel Result", [$result, $command]);
         foreach ($result as $item) {
             if (!empty($item)) {
                 Log::info("Tunnel($tunnel->id) creation return", [$item, $command]);
-//                $tunnel->update(['status' => 6]);
             }
         }
         //执行完成
         $tunnel->update(['status' => 1]);
+    }
+
+    public function rebuild(Tunnel $tunnel)
+    {
+        $this->authorize('update', $tunnel);
+        $tunnel->status = 3;
+        $tunnel->save();
+        return Redirect::back()->with('success', "Tunnel $tunnel->name Rebuild");
+
     }
 
 

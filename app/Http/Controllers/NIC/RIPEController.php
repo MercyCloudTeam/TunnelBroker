@@ -70,7 +70,7 @@ class RIPEController extends Controller
     {
         return Http::withHeaders([
             'Accept' => 'application/json',
-        ])->get("{$this->url}/{$objectType}/{$key}")->json();
+        ])->get("$this->url/$objectType/$key")->json();
     }
 
     public function create($objectType,$key,$params)
@@ -78,7 +78,7 @@ class RIPEController extends Controller
         return Http::withHeaders([
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
-        ])->post("{$this->url}/{$objectType}/{$key}",$params)->json();
+        ])->post("$this->url/$objectType/$key",$params)->json();
     }
 
     public function delete($objectType,$key,$params)
@@ -86,7 +86,7 @@ class RIPEController extends Controller
         return Http::withHeaders([
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
-        ])->delete("{$this->url}/{$objectType}/{$key}",$params)->json();
+        ])->delete("$this->url/$objectType/$key",$params)->json();
     }
 
     /**
@@ -97,7 +97,10 @@ class RIPEController extends Controller
      */
     public function rdap($type,$object)
     {
-        $result = Http::get("https://rdap.db.ripe.net/{$type}/{$object}");
+        $result = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+        ])->get("https://rdap.db.ripe.net/$type/$object");
         if ($result->ok()){
             return $result->json();
         }
