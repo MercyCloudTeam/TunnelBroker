@@ -60,6 +60,60 @@ class NodeController extends Controller
         }
     }
 
+    public function initialServerInfo(SSH2 $connect,Node $node)
+    {
+        //获取系统时间
+        $systemTime = $connect->exec("date +'%Y-%m-%d %H:%M:%S'");
+        $systemTime = Carbon::parse($systemTime);
+        //获取系统版本
+        $systemVersion = $connect->exec("cat /etc/os-release | grep PRETTY_NAME | awk -F '=' '{print $2}'");
+        $systemVersion = trim($systemVersion, '"');
+        //获取系统内核
+        $systemKernel = $connect->exec("uname -r");
+        //获取系统架构
+        $systemArch = $connect->exec("uname -m");
+        //获取系统主机名
+        $systemHostname = $connect->exec("hostname");
+        //获取系统CPU信息
+        $systemCPU = $connect->exec("cat /proc/cpuinfo | grep 'model name' | uniq | awk -F ':' '{print $2}'");
+        //获取系统内存信息
+        $systemMemory = $connect->exec("free -h | grep Mem | awk '{print $2}'");
+        //获取系统硬盘信息
+
+    }
+    public function updateServerStatus(SSH2 $connect, Node $node)
+    {
+        //获取CPU使用信息
+        $cpuUsage = $connect->exec("top -bn1 | grep load | awk '{printf \"%.2f\", $(NF-2)}'");
+        $cpuUsage = (float)$cpuUsage;
+        //获取内存使用信息
+        $memoryUsage = $connect->exec("free | grep Mem | awk '{printf \"%.2f\", $3/$2*100}'");
+        $memoryUsage = (float)$memoryUsage;
+        //获取硬盘使用信息
+        $diskUsage = $connect->exec("df -h | grep /dev/vda1 | awk '{print $5}'");
+        $diskUsage = (float)$diskUsage;
+        //获取系统负载信息
+        $loadAverage = $connect->exec("cat /proc/loadavg | awk '{print $1,$2,$3}'");
+        $loadAverage = explode(' ', $loadAverage);
+        $loadAverage = [
+            '1' => (float)$loadAverage[0],
+            '5' => (float)$loadAverage[1],
+            '15' => (float)$loadAverage[2],
+        ];
+
+        //获取系统运行时间
+        $systemUptime = $connect->exec("uptime -p");
+        $systemUptime = Carbon::parse($systemUptime);
+
+    }
+
+
+    /**
+     * 获取BGP Session信息
+     * @param SSH2 $connect
+     * @param Node $node
+     * @return void
+     */
     public function updateBGPSessionStatus(SSH2 $connect, Node $node)
     {
         if ($node->components->where('component', 'FRR')->where('status', 'active')->isEmpty()) {
@@ -76,6 +130,13 @@ class NodeController extends Controller
             });
     }
 
+    /**
+     * 获取Tunnel BGP Session 信息
+     * @param SSH2 $connect
+     * @param BGPSession $session
+     * @return void
+     * @throws \IPTools\Exception\IpException
+     */
     public function updateBGPSessionStatusByTunnel(SSH2 $connect, BGPSession $session)
     {
         $tunnel = $session->tunnel;
