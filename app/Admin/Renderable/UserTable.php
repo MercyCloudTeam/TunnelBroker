@@ -3,9 +3,9 @@
 namespace App\Admin\Renderable;
 
 use App\Models\User;
-use Dcat\Admin\Grid;
-use Dcat\Admin\Grid\LazyRenderable;
-use Dcat\Admin\Models\Administrator;
+use Isifnet\PieAdmin\Grid;
+use Isifnet\PieAdmin\Grid\LazyRenderable;
+use Isifnet\PieAdmin\Models\Administrator;
 
 class UserTable extends LazyRenderable
 {

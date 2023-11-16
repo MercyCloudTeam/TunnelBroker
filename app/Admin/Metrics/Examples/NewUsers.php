@@ -2,7 +2,7 @@
 
 namespace App\Admin\Metrics\Examples;
 
-use Dcat\Admin\Widgets\Metrics\Line;
+use Isifnet\PieAdmin\Widgets\Metrics\Line;
 use Illuminate\Http\Request;
 
 class NewUsers extends Line

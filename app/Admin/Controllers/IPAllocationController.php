@@ -3,10 +3,10 @@
 namespace App\Admin\Controllers;
 
 use App\Admin\Repositories\IPAllocation;
-use Dcat\Admin\Form;
-use Dcat\Admin\Grid;
-use Dcat\Admin\Show;
-use Dcat\Admin\Http\Controllers\AdminController;
+use Isifnet\PieAdmin\Form;
+use Isifnet\PieAdmin\Grid;
+use Isifnet\PieAdmin\Show;
+use Isifnet\PieAdmin\Http\Controllers\AdminController;
 
 class IPAllocationController extends AdminController
 {

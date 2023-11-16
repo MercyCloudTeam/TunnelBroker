@@ -18,14 +18,24 @@ return new class extends Migration
             $table->foreignId('tunnel_id');
             $table->foreignId('asn_id');
             $table->foreignId('user_id');
-            $table->integer('status')->nullable();
+            $table->string('status')->nullable();
             $table->integer('limit')->nullable(); //默认按照ASN表的写一次，但可以意外修改
             $table->json('session')->nullable();
             $table->json('routes')->nullable();
             $table->json('data')->nullable();
+
+            //更新内容
+            $table->string('import_policy')->nullable();
+            $table->string('export_policy')->nullable();
+
+            $table->string('description')->nullable();
+
+            $table->unsignedBigInteger('vrf_id')->nullable();
+
             $table->timestamps();
         });
 
+        //友情鏈接
         Schema::create('links',function (Blueprint $table){
             $table->id();
             $table->string('category')->nullable();

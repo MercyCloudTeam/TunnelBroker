@@ -6,10 +6,10 @@ use App\Admin\Renderable\NodeTable;
 use App\Admin\Repositories\IPPool;
 use App\Admin\Repositories\Node;
 use App\Jobs\CreateIPAllocation;
-use Dcat\Admin\Form;
-use Dcat\Admin\Grid;
-use Dcat\Admin\Show;
-use Dcat\Admin\Http\Controllers\AdminController;
+use Isifnet\PieAdmin\Form;
+use Isifnet\PieAdmin\Grid;
+use Isifnet\PieAdmin\Show;
+use Isifnet\PieAdmin\Http\Controllers\AdminController;
 use IPTools\IP;
 use IPTools\Network;
 

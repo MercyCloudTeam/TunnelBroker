@@ -2,13 +2,13 @@
 
 namespace App\Admin\Controllers;
 
-use App\Admin\Repositories\ASN;
+use App\Admin\Repositories\NodeConnect;
 use Isifnet\PieAdmin\Form;
 use Isifnet\PieAdmin\Grid;
 use Isifnet\PieAdmin\Show;
 use Isifnet\PieAdmin\Http\Controllers\AdminController;
 
-class ASNController extends AdminController
+class NodeConnectController extends AdminController
 {
     /**
      * Make a grid builder.
@@ -17,14 +17,13 @@ class ASNController extends AdminController
      */
     protected function grid()
     {
-        return Grid::make(new ASN(), function (Grid $grid) {
+        return Grid::make(new NodeConnect(), function (Grid $grid) {
             $grid->column('id')->sortable();
-            $grid->column('user_id');
-            $grid->column('limit');
-            $grid->column('validate');
-            $grid->column('asn');
-            $grid->column('loa');
-            $grid->column('email_verified_at');
+            $grid->column('tunnel_id');
+            $grid->column('right_node_id');
+            $grid->column('left_node_id');
+            $grid->column('cost');
+            $grid->column('status');
             $grid->column('created_at');
             $grid->column('updated_at')->sortable();
 
@@ -44,14 +43,13 @@ class ASNController extends AdminController
      */
     protected function detail($id)
     {
-        return Show::make($id, new ASN(), function (Show $show) {
+        return Show::make($id, new NodeConnect(), function (Show $show) {
             $show->field('id');
-            $show->field('user_id');
-            $show->field('limit');
-            $show->field('validate');
-            $show->field('asn');
-            $show->field('loa');
-            $show->field('email_verified_at');
+            $show->field('tunnel_id');
+            $show->field('right_node_id');
+            $show->field('left_node_id');
+            $show->field('cost');
+            $show->field('status');
             $show->field('created_at');
             $show->field('updated_at');
         });
@@ -64,15 +62,13 @@ class ASNController extends AdminController
      */
     protected function form()
     {
-        return Form::make(new ASN(), function (Form $form) {
+        return Form::make(new NodeConnect(), function (Form $form) {
             $form->display('id');
-            $form->text('user_id');
-            $form->text('limit');
-            $form->switch('validate');
-            $form->text('asn');
-            $form->file('loa');
-            $form->datetime('email_verified_at');
-            $form->email('email');
+            $form->text('tunnel_id');
+            $form->text('right_node_id');
+            $form->text('left_node_id');
+            $form->text('cost');
+            $form->text('status');
 
             $form->display('created_at');
             $form->display('updated_at');

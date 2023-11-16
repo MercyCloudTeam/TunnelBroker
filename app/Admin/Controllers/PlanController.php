@@ -3,10 +3,10 @@
 namespace App\Admin\Controllers;
 
 use App\Admin\Repositories\Plan;
-use Dcat\Admin\Form;
-use Dcat\Admin\Grid;
-use Dcat\Admin\Show;
-use Dcat\Admin\Http\Controllers\AdminController;
+use Isifnet\PieAdmin\Form;
+use Isifnet\PieAdmin\Grid;
+use Isifnet\PieAdmin\Show;
+use Isifnet\PieAdmin\Http\Controllers\AdminController;
 
 class PlanController extends AdminController
 {
@@ -27,10 +27,10 @@ class PlanController extends AdminController
             $grid->column('bandwidth');
             $grid->column('created_at');
             $grid->column('updated_at')->sortable();
-        
+
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->equal('id');
-        
+
             });
         });
     }
@@ -72,7 +72,7 @@ class PlanController extends AdminController
             $form->text('description');
             $form->text('limit');
             $form->text('bandwidth');
-        
+
             $form->display('created_at');
             $form->display('updated_at');
         });

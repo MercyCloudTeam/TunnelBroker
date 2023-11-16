@@ -42,7 +42,8 @@ const submit = () => {
 
     <AuthenticationCard>
         <template #logo>
-            <AuthenticationCardLogo />
+<!--            <AuthenticationCardLogo />-->
+            <p class="text-xl font-bold text-black underline decoration-sky-500">TunnelBroker.IO</p>
         </template>
 
         <div class="mb-4 text-sm text-gray-600">

@@ -2,7 +2,7 @@
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-use Dcat\Admin\Admin;
+use Isifnet\PieAdmin\Admin;
 
 Admin::routes();
 
@@ -16,6 +16,7 @@ Route::group([
     $router->resource('/tunnels', 'TunnelController');
     $router->resource('/ip/pool', 'IPPoolController');
     $router->resource('/nodes', 'NodeController');
+    $router->resource('/node-connect', 'NodeConnectController');
     $router->resource('/asn', 'ASNController');
     $router->resource('/ip/allocation', 'IPAllocationController');
     $router->resource('/user', 'UserController');

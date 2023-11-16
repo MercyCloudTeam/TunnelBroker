@@ -1,11 +1,11 @@
 <?php
 
-use Dcat\Admin\Admin;
-use Dcat\Admin\Grid;
-use Dcat\Admin\Form;
-use Dcat\Admin\Grid\Filter;
-use Dcat\Admin\Show;
-use Dcat\Admin\Layout\Menu;
+use Isifnet\PieAdmin\Admin;
+use Isifnet\PieAdmin\Grid;
+use Isifnet\PieAdmin\Form;
+use Isifnet\PieAdmin\Grid\Filter;
+use Isifnet\PieAdmin\Show;
+use Isifnet\PieAdmin\Layout\Menu;
 
 /**
  * Dcat-admin - admin builder based on Laravel.
@@ -16,9 +16,9 @@ use Dcat\Admin\Layout\Menu;
  * Here you can remove builtin form field:
  *
  * extend custom field:
- * Dcat\Admin\Form::extend('php', PHPEditor::class);
- * Dcat\Admin\Grid\Column::extend('php', PHPEditor::class);
- * Dcat\Admin\Grid\Filter::extend('php', PHPEditor::class);
+ * Isifnet\PieAdmin\Form::extend('php', PHPEditor::class);
+ * Isifnet\PieAdmin\Grid\Column::extend('php', PHPEditor::class);
+ * Isifnet\PieAdmin\Grid\Filter::extend('php', PHPEditor::class);
  *
  * Or require js and css assets:
  * Admin::css('/packages/prettydocs/css/styles.css');
@@ -62,6 +62,20 @@ Admin::menu(function (Menu $menu) {
             'icon'          => 'fa-server',
             'uri'           => '/nodes',
             'parent_id'     => 0,
+        ],
+        [
+            'id'            => 301,
+            'title'         => 'Nodes',
+            'icon'          => 'fa-server',
+            'uri'           => '/nodes',
+            'parent_id'     => 300,
+        ],
+        [
+            'id'            => 302,
+            'title'         => 'Connect',
+            'icon'          => 'fa-server',
+            'uri'           => '/node-connect',
+            'parent_id'     => 300,
         ],
         [
             'id'            => 400,

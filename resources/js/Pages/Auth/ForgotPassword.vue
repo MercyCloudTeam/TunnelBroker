@@ -6,6 +6,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import CardFooter from "./CardFooter.vue";
 
 defineProps({
     status: String,
@@ -25,8 +26,11 @@ const submit = () => {
 
     <AuthenticationCard>
         <template #logo>
-            <AuthenticationCardLogo />
+<!--            <AuthenticationCardLogo />-->
+            <p class="text-xl font-bold text-black underline decoration-sky-500">TunnelBroker.IO</p>
         </template>
+
+        <p class="text-center text-2xl mb-4 mt-4 font-bold text-black">Forgot Password</p>
 
         <div class="mb-4 text-sm text-gray-600">
             Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.
@@ -56,5 +60,7 @@ const submit = () => {
                 </PrimaryButton>
             </div>
         </form>
+
+        <CardFooter />
     </AuthenticationCard>
 </template>

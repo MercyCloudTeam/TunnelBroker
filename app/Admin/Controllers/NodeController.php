@@ -4,10 +4,10 @@ namespace App\Admin\Controllers;
 
 use App\Admin\Repositories\Node;
 use App\Http\Controllers\NodeComponent\NodeComponentBaseController;
-use Dcat\Admin\Form;
-use Dcat\Admin\Grid;
-use Dcat\Admin\Show;
-use Dcat\Admin\Http\Controllers\AdminController;
+use Isifnet\PieAdmin\Form;
+use Isifnet\PieAdmin\Grid;
+use Isifnet\PieAdmin\Show;
+use Isifnet\PieAdmin\Http\Controllers\AdminController;
 
 class NodeController extends AdminController
 {
@@ -30,13 +30,12 @@ class NodeController extends AdminController
             $grid->column('country');
             $grid->column('ip6');
             $grid->column('port');
-            $grid->column('status');
+            $grid->column('status')->using(config('status.node.status'));
             $grid->column('created_at');
             $grid->column('updated_at')->sortable();
 
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->equal('id');
-
             });
         });
     }
@@ -85,8 +84,18 @@ class NodeController extends AdminController
                 $form->text('public_ip6')->help('Can be empty, publicly configured IPV6, used when the node is behind NAT');
 
                 $form->text('username')->default('root')->value($form->model()->username);;
-                $form->select('login_type')->options(config('status.node.login_type'))->default('password')->value($form->model()->login_type);
-                $form->password('password')->value($form->model()->password);
+//                $form->select('login_type')->options(config('status.node.login_type'))->default('password')->value($form->model()->login_type);
+
+
+                $form->radio('login_type')
+                    ->when('password', function (Form $form) {
+                        $form->password('password')->value($form->model()->password);
+                    })
+                    ->when('rsa', function (Form $form) {
+                        $form->textarea('password');
+                    })
+                    ->options(config('status.node.login_type'))
+                    ->default('password');
 
                 $form->text('country');
 

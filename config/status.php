@@ -34,8 +34,8 @@ return [
             //BIRD以后再说
         ],
         'login_type' => [
-            'password' => '账户密码登录',
-            'rsa' => '密钥登录'
+            'password' => '账户密码登录Password',
+            'rsa' => '密钥登录RSA'
         ]
     ],
     'links' => [

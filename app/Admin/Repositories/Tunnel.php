@@ -3,7 +3,7 @@
 namespace App\Admin\Repositories;
 
 use App\Models\Tunnel as Model;
-use Dcat\Admin\Repositories\EloquentRepository;
+use Isifnet\PieAdmin\Repositories\EloquentRepository;
 
 class Tunnel extends EloquentRepository
 {

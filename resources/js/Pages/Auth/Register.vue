@@ -7,6 +7,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import CardFooter from "./CardFooter.vue";
 
 const form = useForm({
     name: '',
@@ -28,10 +29,12 @@ const submit = () => {
 
     <AuthenticationCard>
         <template #logo>
-            <AuthenticationCardLogo />
+            <p class="text-xl font-bold text-black underline decoration-sky-500">TunnelBroker.IO</p>
+<!--            <AuthenticationCardLogo />-->
         </template>
 
         <form @submit.prevent="submit">
+            <p class="text-center text-3xl mb-4 mt-4 font-bold text-black">Register</p>
             <div>
                 <InputLabel for="name" value="Name" />
                 <TextInput
@@ -107,5 +110,8 @@ const submit = () => {
                 </PrimaryButton>
             </div>
         </form>
+
+        <CardFooter />
+
     </AuthenticationCard>
 </template>

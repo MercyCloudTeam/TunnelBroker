@@ -6,6 +6,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import CardFooter from "./CardFooter.vue";
 
 const props = defineProps({
     email: String,
@@ -31,10 +32,12 @@ const submit = () => {
 
     <AuthenticationCard>
         <template #logo>
-            <AuthenticationCardLogo />
+<!--            <AuthenticationCardLogo />-->
+            <p class="text-xl font-bold text-black underline decoration-sky-500">TunnelBroker.IO</p>
         </template>
 
         <form @submit.prevent="submit">
+            <p class="text-center text-3xl mb-4 mt-4 font-bold text-black">Reset Password</p>
             <div>
                 <InputLabel for="email" value="Email" />
                 <TextInput
@@ -80,5 +83,8 @@ const submit = () => {
                 </PrimaryButton>
             </div>
         </form>
+
+        <CardFooter />
+
     </AuthenticationCard>
 </template>

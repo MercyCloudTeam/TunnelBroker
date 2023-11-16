@@ -20,6 +20,7 @@
         "guzzlehttp/guzzle": "^7.0.1",
         "inertiajs/inertia-laravel": "^0.6.3",
         "irazasyed/telegram-bot-sdk": "*",
+        "isifnet/pieadmin": "*",
         "laravel-lang/lang": "~8.0",
         "laravel/fortify": "^1.15",
         "laravel/framework": "^9.46",
