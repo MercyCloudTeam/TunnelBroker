@@ -1,15 +1,15 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/inertia-vue3';
-import AuthenticationCard from '@/Components/AuthenticationCard.vue';
-import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import CardFooter from "./CardFooter.vue";
+import { Head, useForm } from '@inertiajs/vue3';
 
 defineProps({
-    status: String,
+    status: {
+        type: String,
+    },
 });
 
 const form = useForm({
@@ -22,18 +22,12 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Forgot Password" />
-
-    <AuthenticationCard>
-        <template #logo>
-<!--            <AuthenticationCardLogo />-->
-            <p class="text-xl font-bold text-black underline decoration-sky-500">TunnelBroker.IO</p>
-        </template>
-
-        <p class="text-center text-2xl mb-4 mt-4 font-bold text-black">Forgot Password</p>
+    <GuestLayout>
+        <Head title="Forgot Password" />
 
         <div class="mb-4 text-sm text-gray-600">
-            Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.
+            Forgot your password? No problem. Just let us know your email address and we will email you a password reset
+            link that will allow you to choose a new one.
         </div>
 
         <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
@@ -43,14 +37,17 @@ const submit = () => {
         <form @submit.prevent="submit">
             <div>
                 <InputLabel for="email" value="Email" />
+
                 <TextInput
                     id="email"
-                    v-model="form.email"
                     type="email"
                     class="mt-1 block w-full"
+                    v-model="form.email"
                     required
                     autofocus
+                    autocomplete="username"
                 />
+
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
@@ -60,7 +57,5 @@ const submit = () => {
                 </PrimaryButton>
             </div>
         </form>
-
-        <CardFooter />
-    </AuthenticationCard>
+    </GuestLayout>
 </template>

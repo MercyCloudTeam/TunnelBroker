@@ -19,10 +19,16 @@ class HomeController extends Controller
         $usage = array_merge($trafficUsage, $ipAddressUsage, ['tunnel' => $user->tunnels->count()]);
         return Inertia::render('Dashboard', [
             'my' => $user,
+            'user'=>$user,
             'plan' => $user->plan,
             'userPlan' => $user->userPlan,
             'usage' => $usage
         ]);
+    }
+
+    public function lookingGlass()
+    {
+
     }
 
     public function index()

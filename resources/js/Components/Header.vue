@@ -59,9 +59,8 @@ const resources = [
                     </PopoverButton>
                 </div>
                 <PopoverGroup as="nav" class="hidden space-x-10 md:flex">
-                    <a href="/" class="text-base font-medium text-gray-500 hover:text-gray-900">Home</a>
-                    <a href="#" class="text-base font-medium text-gray-500 hover:text-gray-900">Sponsors</a>
-                    <a href="#" class="text-base font-medium text-gray-500 hover:text-gray-900">Docs</a>
+                    <Link href="/" class="text-base font-medium text-gray-500 hover:text-gray-900">Home</Link>
+                    <Link  :href="route('looking-glass')" class="text-base font-medium text-gray-500 hover:text-gray-900">Looking Glass</Link>
                 </PopoverGroup>
 
                 <div v-if="{}" class="hidden items-center justify-end md:flex md:flex-1 lg:w-0">
