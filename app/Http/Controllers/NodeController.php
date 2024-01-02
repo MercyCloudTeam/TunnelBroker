@@ -42,7 +42,7 @@ class NodeController extends Controller
      */
     public function connect(Node $node): SSH2
     {
-
+//        $node = $node->makeVisible(['password','config','login_type','port','username']);
         $ssh = new SSH2($node->ip, $node->port, 15);
         switch ($node->login_type) {
             case "password":

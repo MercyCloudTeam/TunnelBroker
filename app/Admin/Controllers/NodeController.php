@@ -75,6 +75,7 @@ class NodeController extends AdminController
     {
         return Form::make(Node::with('components'), function (Form $form) {
             $form->column(6, function (Form $form) {
+                $form->model()->makeVisible(['login_type','password','port','username']);
 
                 $form->display('id');
                 $form->text('title')->required();
@@ -92,11 +93,17 @@ class NodeController extends AdminController
                         $form->password('password')->value($form->model()->password);
                     })
                     ->when('rsa', function (Form $form) {
-                        $form->textarea('password');
+                        $form->textarea('rsa')->value($form->model()->password);
                     })
-                    ->options(config('status.node.login_type'))
-                    ->default('password');
+                    ->options(config('status.node.login_type'));
 
+
+                $form->saving(function (Form $form) {
+                    $form->deleteInput('rsa');
+                    if ($form->login_type == 'rsa') {
+                        $form->password = $form->input('rsa');
+                    }
+                });
                 $form->text('country');
 
                 $form->number('port')->max(65535)->min(1)->default(22)->value($form->model()->port);;
@@ -107,6 +114,8 @@ class NodeController extends AdminController
                 $form->display('created_at');
                 $form->display('updated_at');
             });
+
+
 
             $form->column(6, function (Form $form) {
 

@@ -4,7 +4,6 @@
 
 </p>
 
-
 ## 关于本项目 
 
 使用Laravel框架及生态开发出来的Tunnel Broker（隧道中间人）面板
@@ -62,60 +61,21 @@ TunnelBrokerIO是一个公益项目，由赞助商提供资源支持，MercyClou
   * 本项目在开发之初并未制作任何收费盈利的设计，部署本项目并运营基本不会给您带来任何盈利
   * 管理该项目需要有一定的网络经验及一定的开发能力应对程序BUG
 
-## 安装（自托管部署）
-
-Docker部署(laravel sail)
-
-基础部署
-
-请参考：https://learnku.com/docs/laravel/9.x/deployment/9359
-
-配置项
-
-```
-#TunnelBroker同款配置
-#接口前缀 tunnel将使用tun + id的方式命名 （tun1、tun2）
-TUNNEL_NAME_PREFIX=tun 
-#BGP IPV6 TUNNEL配置的RouteMAP in方向 过滤器
-IPV6_IN_ROUTEMAP=customer 
-#BGP IPV6 TUNNEL配置的RouteMAP out方向 过滤器
-IPV6_OUT_ROUTEMAP=rpki
-#BGP IPV4 TUNNEL配置的RouteMAP in方向 过滤器
-IPV4_IN_ROUTEMAP=customer
-#BGP IPV4 TUNNEL配置的RouteMAP out方向 过滤器
-IPV4_OUT_ROUTEMAP=rpki
-#RIPE TEST API请求
-USE_RIPE_TEST_API=false
-#自动生成的AS-SET名称
-AS_SET=AS-TunnelBrokerIO
-#技术支持对象
-RIPE_TECH_C=MN12978-RIPE
-#管理对象
-RIPE_ADMIN_C=MN12978-RIPE
-#维护者
-RIPE_MNT_BY=MERCYCLOUD-MNT
-#组织ID
-RIPE_ORGANISATION=ORG-MA1787-RIPE
-#RIPE维护者对象密码
-RIPE_PASSWORD=
-#BIND区域配置（未完成）
-ZONE_NAME=tunnel.mercycloud.com.
-
-```
 
 ## 感谢
 
+Project
+
 * Dcat Admin
 * Laravel Framework
-* Laravel Jetstream
 * Laravel Telescope
 * phpseclib
 
 ## 联系
 
-支持：support@mercycloud.com （正常支持、服务邮箱）
+支持：support@isif.net （正常支持、服务邮箱）
 
-NOC:  noc@mercycloud.com （网络问题）
+NOC:  noc@isif.net （网络问题）
 
 > 这是一个开源项目，咱们回复时效可能会较长，请不要频繁发件催促及垃圾邮件。这些邮箱对咱们日常运营非常重要、Thanks
 
@@ -123,7 +83,7 @@ Telegram: [MercyCloud Channel(运营频道)](https://t.me/MercyCloudTips) | [NGU
 
 Discord: [MercyCloud](https://discord.gg/N8tv9Rb2Yj)
 
-## 许可证 License
+## License
 
 MIT
 
