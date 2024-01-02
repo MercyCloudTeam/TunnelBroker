@@ -9,8 +9,12 @@ const darkMode = localStorage.getItem('darkMode');
 
 onMounted(() => {
     if (darkMode === 'true') {
+        document.body.classList.add('dark')
+        document.body.classList.remove('light')
         document.querySelector("html").setAttribute("data-theme", "dark");
     } else {
+        document.body.classList.add('light')
+        document.body.classList.remove('dark')
         document.querySelector("html").setAttribute("data-theme", "light");
     }
 })

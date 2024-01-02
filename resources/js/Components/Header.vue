@@ -6,7 +6,7 @@
             </div>
             <div class="flex-none">
                 <ul class="menu menu-horizontal px-1">
-                    <li><Link  :href="route('login')">Login</Link></li>
+                    <li><Link :href="route('login')">Login</Link></li>
                     <li><Link :href="route('register')">Register</Link></li>
                     <li>
                         <label class="cursor-pointer grid place-items-center">
@@ -38,8 +38,12 @@ const toggleDarkMode = () => {
     localStorage.setItem('darkMode', !darkMode)
     //Set the class on the body
     if (!darkMode) {
+        document.body.classList.add('dark')
+        document.body.classList.remove('light')
         document.querySelector("html").setAttribute("data-theme", "dark");
     } else {
+        document.body.classList.add('light')
+        document.body.classList.remove('dark')
         document.querySelector("html").setAttribute("data-theme", "light");
     }
 }

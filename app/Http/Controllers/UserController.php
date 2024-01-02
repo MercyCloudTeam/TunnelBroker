@@ -13,7 +13,7 @@ class UserController extends Controller
     {
         $ipAllocation = $user->ipAllocation;
         //Does not count intranet IPs
-        $ipAllocation = $ipAllocation->where('intranet', false);
+//        $ipAllocation = $ipAllocation->where('intranet', false);
         $ipv4Usage = $ipAllocation->where('type', 'ipv4')->count();
         $ipv6Usage = $ipAllocation->where('type', 'ipv6')->count();
         return [

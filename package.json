@@ -23,6 +23,7 @@
         "animate.css": "^4.1.1",
         "flag-icons": "^7.1.0",
         "lodash": "^4.17.21",
+        "sweetalert2": "^11.10.2",
         "wow.js": "^1.2.2"
     }
 }
