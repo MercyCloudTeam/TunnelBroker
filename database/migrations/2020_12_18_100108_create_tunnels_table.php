@@ -44,7 +44,6 @@ class CreateTunnelsTable extends Migration
             $table->bigInteger('node_id');
 //            $table->softDeletes();//软删除
             $table->timestamps();
-
         });
 
         //问题 通过AS-Set包含过滤 若用户的AS-set包含了 Tier1 造成“路由倒灌”
