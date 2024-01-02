@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Dcat\Admin\Models;
-use Dcat\Admin\Models\Administrator;
-use Dcat\Admin\Models\Menu;
-use Dcat\Admin\Models\Role;
+use Isifnet\PieAdmin\Models;
+use Isifnet\PieAdmin\Models\Administrator;
+use Isifnet\PieAdmin\Models\Menu;
+use Isifnet\PieAdmin\Models\Role;
 use Illuminate\Database\Seeder;
 use DB;
 

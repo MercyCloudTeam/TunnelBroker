@@ -15,22 +15,28 @@ class HomeController extends Controller
         $user = Auth::user();
         $userController = new UserController();
         $trafficUsage = $userController->getTrfficUsage($user);
+//        $ipAddressUsage = 0;
         $ipAddressUsage = $userController->getIpAddressUsage($user);
         $usage = array_merge($trafficUsage, $ipAddressUsage, ['tunnel' => $user->tunnels->count()]);
+//        $usage = 0;
         return Inertia::render('Dashboard', [
             'my' => $user,
+            'user'=>$user,
             'plan' => $user->plan,
             'userPlan' => $user->userPlan,
             'usage' => $usage
         ]);
     }
 
+    public function lookingGlass()
+    {
+
+    }
+
     public function index()
     {
         $nodes = Node::all();
         return Inertia::render('Welcome', [
-            'canLogin' => Route::has('login'),
-            'canRegister' => Route::has('register'),
             'nodes' => $nodes
         ]);
     }

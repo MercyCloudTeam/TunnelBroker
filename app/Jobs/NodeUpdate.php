@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Controllers\NodeComponent\FRRController;
 use App\Http\Controllers\NodeController;
 use App\Models\Node;
 use Exception;
@@ -71,7 +72,8 @@ class NodeUpdate implements ShouldQueue
                 //Update Traffic
                 $this->nodeController->calculationTraffic($this->connect,$node);
                 //Update BGP Session
-                $this->nodeController->updateBGPSessionStatus($this->connect,$node);
+                (new FRRController())->updateBGPSessionStatus($this->connect,$node);
+                //Get Server Status
             }
         });
     }

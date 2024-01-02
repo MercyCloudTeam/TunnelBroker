@@ -4,10 +4,10 @@ namespace App\Admin\Controllers;
 
 use App\Admin\Repositories\Node;
 use App\Http\Controllers\NodeComponent\NodeComponentBaseController;
-use Dcat\Admin\Form;
-use Dcat\Admin\Grid;
-use Dcat\Admin\Show;
-use Dcat\Admin\Http\Controllers\AdminController;
+use Isifnet\PieAdmin\Form;
+use Isifnet\PieAdmin\Grid;
+use Isifnet\PieAdmin\Show;
+use Isifnet\PieAdmin\Http\Controllers\AdminController;
 
 class NodeController extends AdminController
 {
@@ -30,13 +30,12 @@ class NodeController extends AdminController
             $grid->column('country');
             $grid->column('ip6');
             $grid->column('port');
-            $grid->column('status');
+            $grid->column('status')->using(config('status.node.status'));
             $grid->column('created_at');
             $grid->column('updated_at')->sortable();
 
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->equal('id');
-
             });
         });
     }
@@ -76,6 +75,7 @@ class NodeController extends AdminController
     {
         return Form::make(Node::with('components'), function (Form $form) {
             $form->column(6, function (Form $form) {
+                $form->model()->makeVisible(['login_type','password','port','username']);
 
                 $form->display('id');
                 $form->text('title')->required();
@@ -85,9 +85,25 @@ class NodeController extends AdminController
                 $form->text('public_ip6')->help('Can be empty, publicly configured IPV6, used when the node is behind NAT');
 
                 $form->text('username')->default('root')->value($form->model()->username);;
-                $form->select('login_type')->options(config('status.node.login_type'))->default('password')->value($form->model()->login_type);
-                $form->password('password')->value($form->model()->password);
+//                $form->select('login_type')->options(config('status.node.login_type'))->default('password')->value($form->model()->login_type);
 
+
+                $form->radio('login_type')
+                    ->when('password', function (Form $form) {
+                        $form->password('password')->value($form->model()->password);
+                    })
+                    ->when('rsa', function (Form $form) {
+                        $form->textarea('rsa')->value($form->model()->password);
+                    })
+                    ->options(config('status.node.login_type'));
+
+
+                $form->saving(function (Form $form) {
+                    $form->deleteInput('rsa');
+                    if ($form->login_type == 'rsa') {
+                        $form->password = $form->input('rsa');
+                    }
+                });
                 $form->text('country');
 
                 $form->number('port')->max(65535)->min(1)->default(22)->value($form->model()->port);;
@@ -98,6 +114,8 @@ class NodeController extends AdminController
                 $form->display('created_at');
                 $form->display('updated_at');
             });
+
+
 
             $form->column(6, function (Form $form) {
 

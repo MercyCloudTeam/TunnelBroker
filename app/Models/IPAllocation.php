@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Dcat\Admin\Traits\HasDateTimeFormatter;
+use Isifnet\PieAdmin\Traits\HasDateTimeFormatter;
 
 use Illuminate\Database\Eloquent\Model;
 

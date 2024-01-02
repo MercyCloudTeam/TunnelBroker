@@ -1,20 +1,11 @@
 <script setup>
-import ActionMessage from '@/Components/ActionMessage.vue';
-import ActionSection from '@/Components/ActionSection.vue';
-import Checkbox from '@/Components/Checkbox.vue';
-import ConfirmationModal from '@/Components/ConfirmationModal.vue';
-import DangerButton from '@/Components/DangerButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
-import FormSection from '@/Components/FormSection.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
+// import DialogModal from '@/Components/DialogModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-import SectionBorder from '@/Components/SectionBorder.vue';
-import TextInput from '@/Components/TextInput.vue';
 import {ref} from "vue";
-import {useForm} from "@inertiajs/inertia-vue3";
+import {useForm}  from '@inertiajs/vue3';
 import Swal from "sweetalert2";
+import Modal from "@/Components/Modal.vue";
 
 defineProps({
     tunnels: Array,
@@ -134,158 +125,173 @@ const getStatusDisplay = (status) => {
 
 
 <template>
-    <div v-if="tunnels.length > 0">
-        <SectionBorder/>
-        <!-- Manage API Tokens -->
-        <div class="mt-10 sm:mt-0">
-            <ActionSection>
-                <template #title>
-                    Manage Tunnels
-                </template>
+    <div>
+        <div v-if="tunnels.length > 0">
+            <!-- Manage API Tokens -->
+            <div class="mt-10 sm:mt-0">
+                <section>
+                    <header>
+                        <h2 class="text-2xl font-medium text-base-content">Manage Tunnels</h2>
 
-                <template #description>
-                </template>
+                        <p class="mt-2 text-sm text-gray-600">
 
-                <template #content>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y-2 divide-gray-200 text-sm">
-                            <thead>
-                            <tr>
-                                <th
-                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
-                                >
-                                    ID
-                                </th>
-                                <th
-                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
-                                >
-                                    Remote Address
-                                </th>
-                                <th
-                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
-                                >
-                                    Status
-                                </th>
-                                <th
-                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900"
-                                >
-                                    Protocol
-                                </th>
-                                <th
-                                    class="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900 text-right"
-                                >
-                                    Action
-                                </th>
-                                <th class="px-4 py-2"></th>
-                            </tr>
-                            </thead>
+                        </p>
+                    </header>
 
-                            <tbody class="divide-y divide-gray-200">
-                            <tr v-for="tunnel in tunnels" :key="tunnel.id">
-                                <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-                                    {{ tunnel.id }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ tunnel.remote }}</td>
-                                <td class="whitespace-nowrap px-4 py-2" :class="getStatusDisplay(tunnel.status).class">
-                                    {{ getStatusDisplay(tunnel.status).text }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-2 text-gray-700"> {{ tunnel.mode }}</td>
-                                <td class="whitespace-nowrap px-4 py-2 text-right">
+                    <div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y-2 divide-gray-200 text-sm">
+                                <thead>
+                                <tr>
+                                    <th
+                                        class="whitespace-nowrap px-4 py-2 text-left font-medium "
+                                    >
+                                        ID
+                                    </th>
+                                    <th
+                                        class="whitespace-nowrap px-4 py-2 text-left font-medium "
+                                    >
+                                        Remote Address
+                                    </th>
+                                    <th
+                                        class="whitespace-nowrap px-4 py-2 text-left font-medium "
+                                    >
+                                        Status
+                                    </th>
+                                    <th
+                                        class="whitespace-nowrap px-4 py-2 text-left font-medium "
+                                    >
+                                        Protocol
+                                    </th>
+                                    <th
+                                        class="whitespace-nowrap px-4 py-2 text-left font-medium  text-right"
+                                    >
+                                        Action
+                                    </th>
+                                    <th class="px-4 py-2"></th>
+                                </tr>
+                                </thead>
 
-                                    <button class="cursor-pointer ml-6 text-sm text-blue-500"
-                                            @click="displayTunnelInfo(tunnel)">
-                                        Detail
-                                    </button>
-                                    <button class="cursor-pointer ml-6 text-sm text-warning"
-                                            @click="confirmTunnelRebuild(tunnel)">
-                                        Rebuild
-                                    </button>
-                                    <button v-if="tunnel.status !== 7" class="cursor-pointer ml-6 text-sm text-red-500"
-                                            @click="confirmTunnelDeletion(tunnel)">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                <tbody class="divide-y divide-gray-200">
+                                <tr v-for="tunnel in tunnels" :key="tunnel.id">
+                                    <td class="whitespace-nowrap px-4 py-2 font-medium ">
+                                        {{ tunnel.id }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-4 py-2 ">{{ tunnel.remote }}</td>
+                                    <td class="whitespace-nowrap px-4 py-2" :class="getStatusDisplay(tunnel.status).class">
+                                        {{ getStatusDisplay(tunnel.status).text }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-4 py-2 "> {{ tunnel.mode }}</td>
+                                    <td class="whitespace-nowrap px-4 py-2 text-right">
+
+                                        <button class="cursor-pointer ml-6 text-sm text-blue-500"
+                                                @click="displayTunnelInfo(tunnel)">
+                                            Detail
+                                        </button>
+                                        <button class="cursor-pointer ml-6 text-sm text-warning"
+                                                @click="confirmTunnelRebuild(tunnel)">
+                                            Rebuild
+                                        </button>
+                                        <button v-if="tunnel.status !== 7" class="cursor-pointer ml-6 text-sm text-red-500"
+                                                @click="confirmTunnelDeletion(tunnel)">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </template>
-            </ActionSection>
+                </section>
+            </div>
+
+            <input type="checkbox" id="deleteModal" v-model="confirmTunnelDeletionModal" class="modal-toggle" />
+            <div class="modal" role="dialog" id="deleteModal">
+                <div class="modal-box">
+                    <h3 class="font-bold text-lg">Remove Tunnel</h3>
+                    <p class="py-4"> Are you sure you want to remove this tunnel?</p>
+                    <div class="modal-action flex gap-2">
+                        <button @click="confirmTunnelDeletionModal = false" class="btn btn-info">Cancel</button>
+                        <button @click="deleteTunnel" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </div>
+
+            <input type="checkbox" id="rebuildModal" v-model="confirmRebuildTunnelModal" class="modal-toggle" />
+            <div class="modal" role="dialog" id="rebuildModal">
+                <div class="modal-box">
+                    <h3 class="font-bold text-lg">Rebuild Tunnel</h3>
+                    <p class="py-4">Are you sure you want to Rebuild this tunnel?</p>
+                    <div class="modal-action flex gap-2">
+                        <button @click="confirmRebuildTunnelModal = false" class="btn btn-info">Cancel</button>
+                        <button @click="rebuildTunnel" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </div>
+
+            <input type="checkbox" id="displayModal" v-model="displayTunnelInfoModal" class="modal-toggle" />
+            <div class="modal" role="dialog" id="displayModal" v-if="detailTunnel.tunnel !== null">
+                <div class="modal-box">
+                    <h3 class="font-bold text-lg">Tunnel #{{ detailTunnel.tunnel.id }}</h3>
+                    <div class="py-4">
+                        <p>Remote Address: {{ detailTunnel.tunnel.remote }} </p>
+                        <p>IPV4 Address: {{ detailTunnel.tunnel.ip4 }}</p>
+                        <p>IPV6 Address: {{ detailTunnel.tunnel.ip6 }}</p>
+                        <p>Server Port: {{ detailTunnel.tunnel.srcport }}</p>
+                        <p>Local Port: {{ detailTunnel.tunnel.dstport }}</p>
+                        <p>Protocol: {{ detailTunnel.tunnel.mode }}</p>
+                        <p>Status: <span
+                            :class="getStatusDisplay(detailTunnel.tunnel.status).class">{{ getStatusDisplay(detailTunnel.tunnel.status).text }}</span>
+                        </p>
+                        <p>Created At: {{ detailTunnel.tunnel.created_at }}</p>
+                        <div v-if="detailTunnel.tunnel.config">
+                            <p v-if="detailTunnel.tunnel.config.local.pubkey">Local Public Key: {{detailTunnel.tunnel.config.remote.pubkey}}</p>
+                            <!--                        <p v-if="detailTunnel.tunnel.config.local.privkey">Local Privacy Key: {{detailTunnel.tunnel.config.local.privkey}}</p>-->
+                            <p v-if="detailTunnel.tunnel.config.remote.pubkey">Local Privacy Key: {{detailTunnel.tunnel.config.remote.privkey}}</p>
+                            <p v-if="detailTunnel.tunnel.config.local.pubkey">Server Public Key: {{detailTunnel.tunnel.config.local.pubkey}}</p>
+                        </div>
+                    </div>
+                    <div class="modal-action flex gap-2">
+                        <button @click="displayTunnelInfoModal = false" class="btn btn-info">Close</button>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!--            <DialogModal :show="displayTunnelInfoModal" @close="displayTunnelInfoModal = false">-->
+            <!--                <template #title>-->
+            <!--                    Tunnel #{{ detailTunnel.tunnel.id }}-->
+            <!--                </template>-->
+
+            <!--                <template #content>-->
+            <!--                    <div>-->
+            <!--                        <p>Remote Address: {{ detailTunnel.tunnel.remote }} </p>-->
+            <!--                        <p>IPV4 Address: {{ detailTunnel.tunnel.ip4 }}</p>-->
+            <!--                        <p>IPV6 Address: {{ detailTunnel.tunnel.ip6 }}</p>-->
+            <!--                        <p>Server Port: {{ detailTunnel.tunnel.srcport }}</p>-->
+            <!--                        <p>Local Port: {{ detailTunnel.tunnel.dstport }}</p>-->
+            <!--                        <p>Protocol: {{ detailTunnel.tunnel.mode }}</p>-->
+            <!--                        <p>Status: <span-->
+            <!--                            :class="getStatusDisplay(detailTunnel.tunnel.status).class">{{ getStatusDisplay(detailTunnel.tunnel.status).text }}</span>-->
+            <!--                        </p>-->
+            <!--                        <p>Created At: {{ detailTunnel.tunnel.created_at }}</p>-->
+            <!--                        <div v-if="detailTunnel.tunnel.config">-->
+            <!--                            <p v-if="detailTunnel.tunnel.config.local.pubkey">Local Public Key: {{detailTunnel.tunnel.config.remote.pubkey}}</p>-->
+            <!--                            &lt;!&ndash;                        <p v-if="detailTunnel.tunnel.config.local.privkey">Local Privacy Key: {{detailTunnel.tunnel.config.local.privkey}}</p>&ndash;&gt;-->
+            <!--                            <p v-if="detailTunnel.tunnel.config.remote.pubkey">Local Privacy Key: {{detailTunnel.tunnel.config.remote.privkey}}</p>-->
+            <!--                            <p v-if="detailTunnel.tunnel.config.local.pubkey">Server Public Key: {{detailTunnel.tunnel.config.local.pubkey}}</p>-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </template>-->
+
+            <!--                <template #footer>-->
+            <!--                    <SecondaryButton @click="displayTunnelInfoModal = false">-->
+            <!--                        Close-->
+            <!--                    </SecondaryButton>-->
+            <!--                </template>-->
+            <!--            </DialogModal>-->
+
         </div>
-
-        <DialogModal :show="confirmTunnelDeletionModal" @close="confirmTunnelDeletionModal = false">
-            <template #title>
-                Remove Tunnel
-            </template>
-
-            <template #content>
-                <div>
-                    Are you sure you want to remove this tunnel?
-                </div>
-            </template>
-
-            <template #footer>
-                <PrimaryButton @click="deleteTunnel">
-                    Remove
-                </PrimaryButton>
-                <SecondaryButton @click="confirmTunnelDeletionModal = false">
-                    Close
-                </SecondaryButton>
-            </template>
-        </DialogModal>
-        <DialogModal :show="confirmRebuildTunnelModal" @close="confirmRebuildTunnelModal = false">
-            <template #title>
-                Rebuild Tunnel
-            </template>
-
-            <template #content>
-                <div>
-                    Are you sure you want to Rebuild this tunnel?
-                </div>
-            </template>
-
-            <template #footer>
-                <PrimaryButton @click="rebuildTunnel">
-                    Remove
-                </PrimaryButton>
-                <SecondaryButton @click="confirmRebuildTunnelModal = false">
-                    Close
-                </SecondaryButton>
-            </template>
-        </DialogModal>
-
-        <DialogModal :show="displayTunnelInfoModal" @close="displayTunnelInfoModal = false">
-            <template #title>
-                Tunnel #{{ detailTunnel.tunnel.id }}
-            </template>
-
-            <template #content>
-                <div>
-
-                    <p>Remote Address: {{ detailTunnel.tunnel.remote }} </p>
-                    <p>IPV4 Address: {{ detailTunnel.tunnel.ip4 }}</p>
-                    <p>IPV6 Address: {{ detailTunnel.tunnel.ip6 }}</p>
-                    <p>Server Port: {{ detailTunnel.tunnel.srcport }}</p>
-                    <p>Local Port: {{ detailTunnel.tunnel.dstport }}</p>
-                    <p>Protocol: {{ detailTunnel.tunnel.mode }}</p>
-                    <p>Status: <span
-                        :class="getStatusDisplay(detailTunnel.tunnel.status).class">{{ getStatusDisplay(detailTunnel.tunnel.status).text }}</span>
-                    </p>
-                    <p>Created At: {{ detailTunnel.tunnel.created_at }}</p>
-                    <div v-if="detailTunnel.tunnel.config">
-                        <p v-if="detailTunnel.tunnel.config.local.pubkey">Local Public Key: {{detailTunnel.tunnel.config.remote.pubkey}}</p>
-<!--                        <p v-if="detailTunnel.tunnel.config.local.privkey">Local Privacy Key: {{detailTunnel.tunnel.config.local.privkey}}</p>-->
-                        <p v-if="detailTunnel.tunnel.config.remote.pubkey">Local Privacy Key: {{detailTunnel.tunnel.config.remote.privkey}}</p>
-                        <p v-if="detailTunnel.tunnel.config.local.pubkey">Server Public Key: {{detailTunnel.tunnel.config.local.pubkey}}</p>
-                    </div>
-                </div>
-            </template>
-
-            <template #footer>
-                <SecondaryButton @click="displayTunnelInfoModal = false">
-                    Close
-                </SecondaryButton>
-            </template>
-        </DialogModal>
     </div>
 </template>

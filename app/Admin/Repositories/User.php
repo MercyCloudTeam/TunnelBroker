@@ -3,7 +3,7 @@
 namespace App\Admin\Repositories;
 
 use App\Models\User as Model;
-use Dcat\Admin\Repositories\EloquentRepository;
+use Isifnet\PieAdmin\Repositories\EloquentRepository;
 
 class User extends EloquentRepository
 {

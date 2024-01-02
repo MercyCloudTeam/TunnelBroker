@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Http\Controllers\TunnelController;
-use Dcat\Admin\Traits\HasDateTimeFormatter;
+use Isifnet\PieAdmin\Traits\HasDateTimeFormatter;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;

@@ -18,14 +18,17 @@ class CreateNodesTables extends Migration
             $table->ipAddress('ip');
             $table->string('username');
             $table->string('title');
+
             $table->string('country', 3)->nullable();
-            $table->string('password')->nullable();
+
+            $table->longText('password')->nullable();
             $table->string('login_type');//密钥登录还是密码登录
             $table->string('port');
             $table->integer('status')->default(1);
             $table->integer('limit');
             $table->boolean('public')->default(true);
             $table->json('config')->nullable();
+
             $table->timestamps();
 
             //2023-1-3 Remove

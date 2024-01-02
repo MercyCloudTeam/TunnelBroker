@@ -2,7 +2,7 @@
 
 namespace App\Admin\Metrics\Examples;
 
-use Dcat\Admin\Widgets\Metrics\RadialBar;
+use Isifnet\PieAdmin\Widgets\Metrics\RadialBar;
 use Illuminate\Http\Request;
 
 class Tickets extends RadialBar

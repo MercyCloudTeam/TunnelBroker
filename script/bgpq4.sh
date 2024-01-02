@@ -1,6 +1,6 @@
 # bin/sh
 
-apt install -y git gcc autoconf || yum install -y git gcc autoconf
+apt install -y git gcc autoconf libtool || yum install -y git gcc autoconf libtool
 
 git clone https://github.com/bgp/bgpq4.git && cd bgpq4
 

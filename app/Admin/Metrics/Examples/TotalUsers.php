@@ -2,7 +2,7 @@
 
 namespace App\Admin\Metrics\Examples;
 
-use Dcat\Admin\Widgets\Metrics\Card;
+use Isifnet\PieAdmin\Widgets\Metrics\Card;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 

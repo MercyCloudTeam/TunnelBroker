@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ASNController;
 use App\Http\Controllers\BGPController;
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\TunnelController;
 use Illuminate\Foundation\Application;
@@ -22,15 +23,8 @@ use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 
-Route::get('/nodes', [NodeController::class, 'index'])->name('node.index');
-
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
-
     Route::resource('/tunnels', TunnelController::class)->except([
         'create', 'edit'
     ]);
@@ -48,4 +42,10 @@ Route::middleware([
 //    ]);
 //    Route::get('/validate/asn',[ASNController::class,'index'])->name('bgp.validate');//验证ASN
     Route::post('/validate/asn', [ASNController::class, 'store'])->name('asn.validate');//验证ASN
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+require __DIR__.'/auth.php';

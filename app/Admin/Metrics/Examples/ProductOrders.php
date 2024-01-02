@@ -2,7 +2,7 @@
 
 namespace App\Admin\Metrics\Examples;
 
-use Dcat\Admin\Widgets\Metrics\Round;
+use Isifnet\PieAdmin\Widgets\Metrics\Round;
 use Illuminate\Http\Request;
 
 class ProductOrders extends Round

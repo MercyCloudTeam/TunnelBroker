@@ -2,8 +2,8 @@
 
 namespace App\Admin\Metrics\Examples;
 
-use Dcat\Admin\Admin;
-use Dcat\Admin\Widgets\Metrics\Donut;
+use Isifnet\PieAdmin\Admin;
+use Isifnet\PieAdmin\Widgets\Metrics\Donut;
 
 class NewDevices extends Donut
 {

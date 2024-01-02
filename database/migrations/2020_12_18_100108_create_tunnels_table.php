@@ -18,7 +18,7 @@ class CreateTunnelsTable extends Migration
             $table->string('mode');//gre sit ipip
             $table->ipAddress('remote');
             $table->ipAddress('ip4')->nullable();
-            $table->integer('ip4_cidr')->default(30);//这个网段的子网網掩
+            $table->integer('ip4_cidr')->default(31);//这个网段的子网網掩
             $table->string('ip4_rdns')->nullable();
             $table->ipAddress('ip6')->nullable();
             $table->integer('ip6_cidr')->default(64);
@@ -28,9 +28,14 @@ class CreateTunnelsTable extends Migration
             $table->integer('vlan')->nullable();
             $table->integer('status')->default(1);
             $table->macAddress('mac')->nullable();
-            $table->string('interface')->nullable();
+            $table->string('interface')->nullable();//实际接口名称
             $table->integer('srcport')->nullable();
             $table->integer('dstport')->nullable();//预留给VXLAN等其他端口协议使用
+
+            $table->integer('mtu')->nullable();
+            $table->bigInteger('vni')->nullable();
+
+            $table->string('description')->nullable();
 
             $table->string('type')->default('tunnel');
 
@@ -39,7 +44,6 @@ class CreateTunnelsTable extends Migration
             $table->bigInteger('node_id');
 //            $table->softDeletes();//软删除
             $table->timestamps();
-
         });
 
         //问题 通过AS-Set包含过滤 若用户的AS-set包含了 Tier1 造成“路由倒灌”
@@ -61,7 +65,7 @@ class CreateTunnelsTable extends Migration
             $table->boolean('validate')->default(0);//验证状态
             $table->bigInteger('asn')->unique();//唯一 不允许多个用户验证同一个ASN
             $table->json('loa')->nullable();//LOA文件验证
-            $table->string('email')->nullable();
+            $table->string('email')->nullable();//验证所用邮箱
             $table->timestamp('email_verified_at')->nullable();//邮件验证时间
             $table->timestamps();
         });

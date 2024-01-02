@@ -1,19 +1,10 @@
 <script setup>
 
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/inertia-vue3';
-import ActionMessage from '@/Components/ActionMessage.vue';
-import ActionSection from '@/Components/ActionSection.vue';
-import Checkbox from '@/Components/Checkbox.vue';
-import ConfirmationModal from '@/Components/ConfirmationModal.vue';
-import DangerButton from '@/Components/DangerButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
-import FormSection from '@/Components/FormSection.vue';
+import { useForm } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import SectionBorder from '@/Components/SectionBorder.vue';
 import TextInput from '@/Components/TextInput.vue';
 import Swal from "sweetalert2";
 
@@ -113,16 +104,19 @@ const modeChange = () => {
 
 
 <template>
-    <FormSection @submitted="createTunnel">
-        <template #title>
-            Create Tunnel
-        </template>
+    <section @submitted="createTunnel">
 
-        <template #description>
-            Please enter your server IP and information for creating the interface.
-        </template>
+        <header>
+            <h2 class="text-2xl font-medium text-base-content">Create Tunnel</h2>
 
-        <template #form>
+            <p class="mt-2 text-sm text-base-content">
+                Please enter your server IP and information for creating the interface.
+            </p>
+        </header>
+
+
+        <form  @submit.prevent="createTunnelForm.post(route('tunnels.store'))" class="mt-6 space-y-6">
+
             <!-- Remote IP -->
             <div class="col-span-6">
                 <InputLabel for="remote" value="Remote IP" />
@@ -165,7 +159,7 @@ const modeChange = () => {
             <div class="col-span-6">
                 <InputLabel for="node" value="Node" />
                     <select
-                        class="border-gray-300 w-full focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
+                        class="select select-bordered  w-full"
                         v-model="createTunnelForm.node">
                         <option v-for="node in nodes" :value="node.id">
                             {{ node.title }}
@@ -179,27 +173,26 @@ const modeChange = () => {
                 <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div v-for="mode in availableMode" :key="mode">
                         <label class="flex items-center">
-                            <input type="radio" @change="modeChange" v-model="createTunnelForm.mode" :value="mode" >
-                            <span class="ml-2 text-sm text-gray-600">{{ mode }}</span>
+                            <input type="radio"  class="radio radio-primary"  @change="modeChange" v-model="createTunnelForm.mode" :value="mode" >
+                            <span class="ml-2 text-lg text-gray-600">{{ mode }}</span>
                         </label>
                     </div>
                 </div>
                 <InputError :message="createTunnelForm.errors.mode" class="mt-2" />
             </div>
-        </template>
 
-        <template #actions>
-            <ActionMessage :on="createTunnelForm.recentlySuccessful" class="mr-3">
+            <p v-if="createTunnelForm.recentlySuccessful" class="mr-3">
                 Created.
-            </ActionMessage>
-            <ActionMessage v-if="createTunnelForm.hasErrors">
+            </p>
+            <p v-if="createTunnelForm.hasErrors">
                 {{ createTunnelForm.errors.toString()}}
-            </ActionMessage>
+            </p>
 
-            <PrimaryButton :class="{ 'opacity-25': createTunnelForm.processing }" :disabled="createTunnelForm.processing">
+            <button class="btn btn-primary " :class="{ 'opacity-25': createTunnelForm.processing }" :disabled="createTunnelForm.processing">
                 Create
-            </PrimaryButton>
-        </template>
-    </FormSection>
+            </button>
+        </form>
+
+    </section>
 
 </template>

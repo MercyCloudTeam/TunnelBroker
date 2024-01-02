@@ -3,7 +3,7 @@
 namespace App\Admin\Repositories;
 
 use App\Models\IPPool as Model;
-use Dcat\Admin\Repositories\EloquentRepository;
+use Isifnet\PieAdmin\Repositories\EloquentRepository;
 
 class IPPool extends EloquentRepository
 {
