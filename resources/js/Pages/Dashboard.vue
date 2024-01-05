@@ -38,9 +38,9 @@ const humanTrafficDisplay = (bytes) => {
                         </div>
                         <div class="border-t border-base-200 ">
                             <div>
-                                <div class="bg-base-300 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                <div class="bg-base-300 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6" v-if="plan !== undefined">
                                     <dt class="text-sm font-medium ">Plan</dt>
-                                    <dd class="mt-1 text-sm  sm:col-span-2 sm:mt-0">{{plan.name}} ({{plan.slug}})</dd>
+                                    <dd class="mt-1 text-sm  sm:col-span-2 sm:mt-0">{{plan.name ? plan.name : ''}} ({{plan.slug ? plan.slug : ''}})</dd>
                                 </div>
                                 <div class="bg-base-300 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                     <dt class="text-sm font-medium ">Plan Traffic Usage</dt>

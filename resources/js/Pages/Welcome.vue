@@ -2,7 +2,19 @@
 import { Head, Link } from '@inertiajs/vue3';
 import LoadingLayout from "@/Layouts/LoadingLayout.vue";
 import { BoltIcon, CubeIcon, GlobeAltIcon, ScaleIcon } from '@heroicons/vue/24/outline'
-import * as echarts from 'echarts';
+import * as echarts from 'echarts/core';
+import { TooltipComponent, GeoComponent } from 'echarts/components';
+import { EffectScatterChart } from 'echarts/charts';
+import { UniversalTransition } from 'echarts/features';
+import { CanvasRenderer } from 'echarts/renderers';
+
+echarts.use([
+    TooltipComponent,
+    GeoComponent,
+    EffectScatterChart,
+    CanvasRenderer,
+    UniversalTransition
+]);
 
 import WorldMap from "../../assets/svg/map.svg";
 import { onMounted } from "vue";
