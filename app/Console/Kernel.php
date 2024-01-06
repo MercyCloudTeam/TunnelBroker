@@ -36,8 +36,8 @@ class Kernel extends ConsoleKernel
 //        $schedule->job(new CalculationBandwidth())->everyFiveMinutes();//每5分钟获取一次流量（统计） & 获取不到的接口会归类为异常
 //        $schedule->job(new BGPCheck())->everyTenMinutes();//BGP Status Check
 
-        $schedule->job(new TunnelUpdate())->everyThreeMinutes(); //Tunnel状态检查
-        $schedule->job(new NodeUpdate())->everyFiveMinutes(); //Node状态检查
+        $schedule->job(new TunnelUpdate())->everyMinute(); //Tunnel状态检查
+        $schedule->job(new NodeUpdate())->everyThreeHours(); //Node状态检查
 
 
         //每3小时将创建异常的服务状态改为等待创建（重试等待机制）

@@ -10,12 +10,23 @@ import { Link } from '@inertiajs/vue3';
 const showingNavigationDropdown = ref(false);
 
 //Get Dark Mode localStorage
-
+const darkMode = localStorage.getItem('darkMode');
 const darkModel = ref(false)
 
 onMounted(() => {
+    if (darkMode === 'true') {
+        document.body.classList.add('dark')
+        document.body.classList.remove('light')
+        document.querySelector("html").setAttribute("data-theme", "dark");
+    } else {
+        document.body.classList.add('light')
+        document.body.classList.remove('dark')
+        document.querySelector("html").setAttribute("data-theme", "light");
+    }
+
     darkModel.value = localStorage.getItem('darkMode') === 'true'
 })
+
 
 const toggleDarkMode = () => {
     const darkMode = localStorage.getItem('darkMode') === 'true'
