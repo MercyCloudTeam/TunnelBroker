@@ -19,8 +19,24 @@ defineProps({
         </template>
 
         <div>
+            <div>
+                <div class="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8">
+                    <div class="card shadow bg-base-100">
+                        <div class="card-body">
+                            <p class="text-2xl font-bold">Note:</p>
+                            <p>
+                                If creation fails, test if your IP quota is sufficient. <br>
+
+                                Except for SIT, ip6ip6,ip6gre all others will be assigned IPV4 interconnect addresses.
+                                <br>
+                                If there is still an exception, please contact the staff.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div v-if="tunnels.length > 0">
-                <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+                <div class="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8">
                     <div class="card shadow bg-base-100">
                         <div class="card-body">
                             <List :tunnels="tunnels"/>
@@ -28,7 +44,7 @@ defineProps({
                     </div>
                 </div>
             </div>
-            <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8">
                 <div class="card shadow bg-base-100">
                     <div class="card-body">
                         <TunnelManager  :tunnels="tunnels" :available-mode="availableMode" :nodes="nodes" ></TunnelManager>

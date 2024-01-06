@@ -188,7 +188,7 @@ const getStatusDisplay = (status) => {
                                                 @click="displayTunnelInfo(tunnel)">
                                             Detail
                                         </button>
-                                        <button class="cursor-pointer ml-6 text-sm text-warning"
+                                        <button class="cursor-pointer ml-6 text-sm text-warning" v-if="tunnel.status !== 7"
                                                 @click="confirmTunnelRebuild(tunnel)">
                                             Rebuild
                                         </button>

@@ -22,4 +22,19 @@ class IPAllocation extends Model
             ['tunnel_id','=',null]
         ]);
     }
+
+    public function node()
+    {
+        return $this->belongsTo(Node::class);
+    }
+
+    public function ip_pool()
+    {
+        return $this->belongsTo(IPPool::class);
+    }
+
+    public function tunnel()
+    {
+        return $this->belongsTo(Tunnel::class);
+    }
 }

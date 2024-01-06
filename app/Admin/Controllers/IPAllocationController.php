@@ -17,12 +17,12 @@ class IPAllocationController extends AdminController
      */
     protected function grid()
     {
-        return Grid::make(new IPAllocation(), function (Grid $grid) {
+        return Grid::make(new IPAllocation(['node']), function (Grid $grid) {
             $grid->column('id')->sortable();
-            $grid->column('node_id');
+            $grid->column('node.title','Node');
             $grid->column('tunnel_id');
             $grid->column('ip');
-            $grid->column('intranet');
+            $grid->column('intranet')->bool();
             $grid->column('cidr');
             $grid->column('type');
             $grid->column('created_at');

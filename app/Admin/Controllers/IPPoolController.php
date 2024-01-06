@@ -37,8 +37,9 @@ class IPPoolController extends AdminController
 
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->equal('id');
-
             });
+
+
         });
     }
 
@@ -86,7 +87,7 @@ class IPPoolController extends AdminController
             $form->select('ip_type')->options(['ipv4' => 'IPV4', 'ipv6' => 'IPV6'])->required()->default('ipv6');
             $form->switch('generated')->default(true);
             $form->text('type')->default('common')->required();
-            $form->switch('intranet');
+            $form->switch('intranet')->help('Intranet IP will not be used for public network')->default(false);
 
             $form->display('created_at');
             $form->display('updated_at');
@@ -98,14 +99,16 @@ class IPPoolController extends AdminController
                     $form->response()->error('IP type mismatch');
                     return;
                 } elseif ($ipType == 'ipv4' && $form->cidr > 32) {
-                    $form->response()->error('IPv4 CIDR must be less than 32');
+                    $form->response()->error('IPv4 CIDR must be less than 31');
                     return;
                 } elseif ($ipType == 'ipv6' && $form->cidr > 128) {
-                    $form->response()->error('IPv6 CIDR must be less than 128');
+                    $form->response()->error('IPv6 CIDR must be less than 127');
                     return;
                 }
 
-                CreateIPAllocation::dispatch(\App\Models\IPPool::find($result));
+                if ($form->isCreating() && $form->generated) {
+                    CreateIPAllocation::dispatch(\App\Models\IPPool::find($result));
+                }
             });
         });
 

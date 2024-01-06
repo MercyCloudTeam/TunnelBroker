@@ -21,10 +21,12 @@ class PlanController extends AdminController
             $grid->column('id')->sortable();
             $grid->column('name');
             $grid->column('slug');
-            $grid->column('data');
             $grid->column('description');
             $grid->column('limit');
-            $grid->column('bandwidth');
+            $grid->column('ipv6_num');
+            $grid->column('ipv4_num');
+            $grid->column('speed');
+            $grid->column('traffic');
             $grid->column('created_at');
             $grid->column('updated_at')->sortable();
 
@@ -51,7 +53,10 @@ class PlanController extends AdminController
             $show->field('data');
             $show->field('description');
             $show->field('limit');
-            $show->field('bandwidth');
+            $show->field('ipv6_num');
+            $show->field('ipv4_num');
+            $show->field('speed');
+            $show->field('traffic');
             $show->field('created_at');
             $show->field('updated_at');
         });
@@ -70,8 +75,11 @@ class PlanController extends AdminController
             $form->text('slug');
             $form->text('data');
             $form->text('description');
-            $form->text('limit');
-            $form->text('bandwidth');
+            $form->number('limit');
+            $form->number('ipv6_num');
+            $form->number('ipv4_num');
+            $form->number('speed')->help('Mbps');
+            $form->number('traffic')->help('GB');
 
             $form->display('created_at');
             $form->display('updated_at');

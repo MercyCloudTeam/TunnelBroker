@@ -18,16 +18,17 @@ const createTunnel = () => {
         preserveScroll: true,
         errorBag: 'createTunnel',
         onSuccess: () => {
-            createTunnelForm.reset('remote', 'mode', 'node','pubkey','port');
-            displayingToken.value = true;
-            createTunnelForm.reset();
-            displayPubKeyInput.value = false;
-            displayPortInput.value = false;
             Swal.fire({
                 icon: 'success',
                 title: 'Tunnel created',
                 text: 'Tunnel created successfully, places wait 1 minute for the tunnel to be created',
             })
+
+            createTunnelForm.reset('remote', 'mode', 'node','pubkey','port');
+            displayingToken.value = true;
+            createTunnelForm.reset();
+            displayPubKeyInput.value = false;
+            displayPortInput.value = false;
         },
         onError: () => {
             if (createTunnelForm.errors.tunnel)
@@ -185,7 +186,13 @@ const modeChange = () => {
                 Created.
             </p>
             <p v-if="createTunnelForm.hasErrors">
-                {{ createTunnelForm.errors.toString()}}
+<!--                {{ createTunnelForm.errors.createTunnel.remote.toString() }}-->
+<!--                {{ createTunnelForm.errors.createTunnel.mode.toString() }}-->
+                <span v-for="items in createTunnelForm.errors">
+                    <span v-for="value in items">
+                        {{value}}
+                    </span>
+                </span>
             </p>
 
             <button class="btn btn-primary " :class="{ 'opacity-25': createTunnelForm.processing }" :disabled="createTunnelForm.processing">

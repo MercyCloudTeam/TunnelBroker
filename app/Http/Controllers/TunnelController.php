@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use IPTools\Exception\IpException;
 use IPTools\Network;
 use Log;
 use phpseclib3\Net\SSH2;
@@ -225,6 +226,7 @@ class TunnelController extends Controller
 
         switch ($request->mode) {
             case "wireguard":
+                //生成加密
                 try {
                     $ed25519 = sodium_crypto_sign_keypair();
                     $ed25519PubKey = sodium_crypto_sign_publickey($ed25519);
@@ -351,11 +353,11 @@ class TunnelController extends Controller
                 }
                 $command[] = $ipShell;
                 break;
-
             case "vxlan":
                 switch ($action) {
                     case 'add':
-                        $id = $tunnel->srcport;//SrcPort作为VXLAN的ID
+                        //vxlan id = 3 . 后两位user_id . 截取后4位Tunnel ID
+                        $id = "3" . substr($tunnel->user_id,-2) . substr($tunnel->id, -4);
                         $ipShell = "sudo ip link add dev $tunnel->interface type vxlan id $id dstport $tunnel->dstport local $tunnel->local remote $tunnel->remote";
                         break;
                     case 'change':
@@ -443,24 +445,20 @@ class TunnelController extends Controller
     }
 
     /**
-     * @throws \Throwable
+     * @throws Throwable
      */
-    public function assignIP(Tunnel $tunnel, bool $forcePublic = false)
+    public function assignIP(Tunnel $tunnel, bool $forcePublic = false): bool
     {
         $v6 = false;
         $v4 = false;
         $port = false;
 
         switch ($tunnel->mode) {
-            case "sit":
-                $v6 = true;
-                //sit只分配ipv6
-                break;
             case "gre":
+            case "vxlan":
                 $v4 = true;
                 $v6 = true;
                 break;
-            case "vxlan":
             case "wireguard":
                 $v4 = true;
                 $v6 = true;
@@ -472,12 +470,14 @@ class TunnelController extends Controller
                 break;
             case "ip6ip6":
             case "ip6gre":
+            case "sit":
                 //ipv6 only
                 $v6 = true;
                 break;
             default:
                 //神秘隧道类型
                 $tunnel->update(['status' => 7]);
+                Log::info('TunnelController::assignIP() Unknown tunnel mode', ['tunnel' => $tunnel]);
                 throw new Exception('Node IP address exhaustion');
         }
 
@@ -505,11 +505,18 @@ class TunnelController extends Controller
         $update = [];
         $update['interface'] = env('TUNNEL_NAME_PREFIX', 'tun') . $tunnel->id;
 
+        switch ($tunnel->mode){
+            case "wireguard":
+                $update['srcport'] = 4789;
+                break;
+        }
+
         if ($port) {
             $port = $this->assignPort($tunnel);
             if (empty($port)) {
                 $update['status'] = 4;
                 $tunnel->update($update);
+                Log::info('TunnelController::assignIP() Port exhaustion', ['tunnel' => $tunnel]);
                 DB::rollBack();
                 return false;
             }
@@ -526,6 +533,7 @@ class TunnelController extends Controller
                 $update['status'] = 4;
                 $tunnel->update($update);
                 DB::rollBack();
+                Log::info('TunnelController::assignIP() IP address exhaustion', ['tunnel' => $tunnel]);
                 return false;
 //                throw new Exception('Node IP address exhaustion IPV6');
             }
@@ -540,6 +548,7 @@ class TunnelController extends Controller
                 $update['status'] = 4;
                 $tunnel->update($update);
                 DB::rollBack();
+                Log::info('TunnelController::assignIP() IP address exhaustion', ['tunnel' => $tunnel]);
                 return false;
 //                throw new Exception('Node IP address exhaustion IPV4');
             }
@@ -549,6 +558,7 @@ class TunnelController extends Controller
         try {
             $tunnel->update($update);
         } catch (Exception $e) {
+            Log::info('TunnelController::assignIP() Update tunnel failed', ['tunnel' => $tunnel]);
             DB::rollBack();
             throw $e;
         }
@@ -557,6 +567,12 @@ class TunnelController extends Controller
         //v6默认使用 ::2  v4则按CIDR大小使用第一个IP
     }
 
+    /**
+     * 删除隧道
+     * @param SSH2 $ssh
+     * @param Tunnel $tunnel
+     * @return void
+     */
     public function delTunnel(SSH2 $ssh, Tunnel $tunnel)
     {
         switch ($tunnel->status) {
@@ -608,6 +624,13 @@ class TunnelController extends Controller
 
     }
 
+    /**
+     * 删除BGP Session
+     * @param SSH2 $ssh
+     * @param BGPSession $bgpSession
+     * @return void
+     * @throws Exception
+     */
     public function delBGPSession(SSH2 $ssh, BGPSession $bgpSession)
     {
         $frrController = new \App\Http\Controllers\NodeComponent\FRRController();
@@ -639,6 +662,12 @@ class TunnelController extends Controller
         }
     }
 
+    /**
+     * 更改隧道IP
+     * @param SSH2 $ssh
+     * @param Tunnel $tunnel
+     * @return void
+     */
     public function changeTunnelIP(SSH2 $ssh, Tunnel $tunnel)
     {
         if ($tunnel->status == 5) {
@@ -658,12 +687,26 @@ class TunnelController extends Controller
     }
 
 
+    /**
+     * 重建隧道
+     * @param SSH2 $ssh
+     * @param Tunnel $tunnel
+     * @return void
+     * @throws IpException
+     */
     public function rebuildTunnel(SSH2 $ssh, Tunnel $tunnel)
     {
         $this->delTunnel($ssh, $tunnel);
         $this->createTunnelAction($ssh, $tunnel);
     }
 
+    /**
+     * 创建隧道
+     * @param SSH2 $ssh
+     * @param Tunnel $tunnel
+     * @return void
+     * @throws IpException
+     */
     public function createTunnel(SSH2 $ssh, Tunnel $tunnel)
     {
         if ($tunnel->status == 2) {
@@ -699,6 +742,13 @@ class TunnelController extends Controller
         }
     }
 
+    /**
+     * 删除隧道
+     * @param SSH2 $ssh
+     * @param Tunnel $tunnel
+     * @return void
+     * @throws \IPTools\Exception\IpException
+     */
     public function createTunnelAction(SSH2 $ssh, Tunnel $tunnel)
     {
         $command = $this->createTunnelCommand($tunnel);
@@ -723,6 +773,9 @@ class TunnelController extends Controller
             $ip4 = (string)Network::parse("$tunnel->ip4/{$tunnel->ip4_cidr}")->getFirstIP()->next();
             $result[] = $ssh->exec("sudo ip addr add $ip4/$tunnel->ip4_cidr dev $tunnel->interface");
         }
+        //把网口扔到VRF里面
+        $result[] = $ssh->exec("sudo ip link set dev {$tunnel->interface} master TunnelBrokerIO");
+
         //Speed Limit
         $plan = User::find($tunnel->user_id)->plan;
         $speed = $plan->speed;
@@ -744,6 +797,12 @@ class TunnelController extends Controller
         $tunnel->update(['status' => 1]);
     }
 
+    /**
+     * 重建隧道
+     * @param Tunnel $tunnel
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function rebuild(Tunnel $tunnel)
     {
         $this->authorize('update', $tunnel);

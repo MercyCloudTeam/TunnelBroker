@@ -20,5 +20,6 @@ Route::group([
     $router->resource('/asn', 'ASNController');
     $router->resource('/ip/allocation', 'IPAllocationController');
     $router->resource('/user', 'UserController');
+    $router->resource('/plan', 'PlanController');
 //    $router->resource('/bgp/filter', 'UserController');
 });

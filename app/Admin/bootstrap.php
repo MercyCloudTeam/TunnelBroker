@@ -106,7 +106,21 @@ Admin::menu(function (Menu $menu) {
             'parent_id'     => 600,
         ],
         [
-            'id'            => 700,
+            'id'           => 700,
+            'title'         => 'Plan',
+            'icon'          => 'fa-tasks',
+            'uri'           => '/plan',
+            'parent_id'     => 0,
+        ],
+        [
+            'id'           => 701,
+            'title'         => 'Plan',
+            'icon'          => 'fa-tasks',
+            'uri'           => '/plan',
+            'parent_id'     => 700,
+        ],
+        [
+            'id'            => 1000,
             'title'         => 'Settings',
             'icon'          => 'fa-cog',
             'uri'           => '/settings',
