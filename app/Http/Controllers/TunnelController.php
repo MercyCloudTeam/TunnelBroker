@@ -165,7 +165,7 @@ class TunnelController extends Controller
         $user = Auth::user();
         $asn = ASN::where('user_id', $user->id)->active()->get();
         return Inertia::render('Tunnels/Index', [
-            'tunnels' => $user->tunnels,
+            'tunnels' => $user->tunnels->load('node'),
             'availableMode' => self::$availableModes,
             'asn' => $asn,
             'nodes' => $node,
@@ -223,6 +223,9 @@ class TunnelController extends Controller
                 'tunnel' => ["You've created too many Tunnels"],
             ]);
         }
+        $addons = [];
+        $config['assign_ipv4_address'] = $request->assign_ipv4_address;
+        $config['assign_ipv4_intranet_address'] = $request->assign_ipv4_intranet_address;
 
         switch ($request->mode) {
             case "wireguard":
@@ -260,13 +263,13 @@ class TunnelController extends Controller
                     ];
                 }
                 break;
+            case "vxlan":
+                $addons['srcport'] = 4789;
+                break;
         }
 
-        if ($request->force_public_ip_address ?? false) {
-            $config['force_public_ip_address'] = true;
-        }
 
-        $tunnel = Tunnel::create([
+        $template = [
             'mode' => $request->mode,
             'remote' => $request->remote,
             'status' => 2,
@@ -276,7 +279,9 @@ class TunnelController extends Controller
             'dstport' => $request->port ?? null,
             'config' => $config ?? null,
 
-        ]);
+        ];
+        $createArr = array_merge($template,$addons);
+        $tunnel = Tunnel::create($createArr);
 
         if (isset($tunnel)) {
             return $tunnel;
@@ -447,7 +452,7 @@ class TunnelController extends Controller
     /**
      * @throws Throwable
      */
-    public function assignIP(Tunnel $tunnel, bool $forcePublic = false): bool
+    public function assignIP(Tunnel $tunnel): bool
     {
         $v6 = false;
         $v4 = false;
@@ -496,11 +501,22 @@ class TunnelController extends Controller
             return false;
         }
 
+        //根据用户需求 分配IP地址
+        //默认分配内网IPv4地址
+        $assignIpv4IntranetAddress = $tunnel->config['assign_ipv4_intranet_address'] ?? true;
+        //默认不分配
+        $assignIpv4Address = $tunnel->config['assign_ipv4_address'] ?? false;
+
+        if (!$assignIpv4Address){
+            //如果不分配，把变量也为false
+            $v4 = false;
+        }
+
         DB::beginTransaction();
         $ips = IPAllocation::ofActive($tunnel->node_id);
-        if ($forcePublic) {
-            $ips = $ips->where('intranet', false);
-        }
+//        if (!$assignIntranetAddress) {
+//            $ips = $ips->where('intranet', false);
+//        }
         $ips = $ips->get();
         $update = [];
         $update['interface'] = env('TUNNEL_NAME_PREFIX', 'tun') . $tunnel->id;
@@ -514,8 +530,6 @@ class TunnelController extends Controller
         if ($port) {
             $port = $this->assignPort($tunnel);
             if (empty($port)) {
-                $update['status'] = 4;
-                $tunnel->update($update);
                 Log::info('TunnelController::assignIP() Port exhaustion', ['tunnel' => $tunnel]);
                 DB::rollBack();
                 return false;
@@ -530,27 +544,26 @@ class TunnelController extends Controller
                 $update['ip6_cidr'] = $ipv6->cidr;
                 IPAllocation::where('id', $ipv6->id)->update(['tunnel_id' => $tunnel->id]);
             } else {
-                $update['status'] = 4;
-                $tunnel->update($update);
                 DB::rollBack();
-                Log::info('TunnelController::assignIP() IP address exhaustion', ['tunnel' => $tunnel]);
+                Log::info('TunnelController::assignIP() IPv6 address exhaustion', ['tunnel' => $tunnel]);
                 return false;
-//                throw new Exception('Node IP address exhaustion IPV6');
             }
         }
         if ($v4) {
-            $ipv4 = $ips->where('type', 'ipv4')->first();
+            if ($assignIpv4IntranetAddress) {
+                $ipv4 = $ips->where('type', 'ipv4')->where('intranet', true)->first();
+            } else {
+                $ipv4 = $ips->where('type', 'ipv4')->where('intranet', false)->first();
+            }
+
             if (!empty($ipv4)) {
                 $update['ip4'] = (string)Network::parse("$ipv4->ip/$ipv4->cidr")->getFirstIP();
                 $update['ip4_cidr'] = $ipv4->cidr;
                 IPAllocation::where('id', $ipv4->id)->update(['tunnel_id' => $tunnel->id]);
             } else {
-                $update['status'] = 4;
-                $tunnel->update($update);
                 DB::rollBack();
-                Log::info('TunnelController::assignIP() IP address exhaustion', ['tunnel' => $tunnel]);
+                Log::info('TunnelController::assignIP() IPv4 address exhaustion', ['tunnel' => $tunnel]);
                 return false;
-//                throw new Exception('Node IP address exhaustion IPV4');
             }
         }
 
@@ -719,19 +732,17 @@ class TunnelController extends Controller
                 ]);
             } else {
                 try {
-                    if ($tunnel->config['force_public_ip_address'] ?? false) {
-                        $bool = $this->assignIP($tunnel, true);
-                    } else {
-                        $bool = $this->assignIP($tunnel);
-                    }
+                    $bool = $this->assignIP($tunnel);
                 } catch (Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Tunnel IP allocation failed', [$e->getMessage(), $tunnel->toArray()]);
+                    Log::error('Create Tunnel,Assign IP Error', [$e->getMessage(), $tunnel->toArray()]);
                     $tunnel->update(['status' => 4]);
                     return;
                 }
                 $tunnel->refresh();//重新加载模型
                 if ($bool) {
                     $this->createTunnelAction($ssh, $tunnel);
+                }else{
+                    $tunnel->update(['status' => 4]);
                 }
 
             }
@@ -787,10 +798,10 @@ class TunnelController extends Controller
             $result[] = $ssh->exec("sudo tc filter add dev $tunnel->interface parent ffff: protocol all prio 1 basic police rate {$speed}Mbit burst 10Mbit mtu 65535 drop");
         }
 
-        Log::debug("Create Tunnel Result", [$result, $command]);
+//        Log::debug("Create Tunnel Result", [$result]);
         foreach ($result as $item) {
             if (!empty($item)) {
-                Log::info("Tunnel($tunnel->id) creation return", [$item, $command]);
+                Log::info("Tunnel($tunnel->id) creation return", [$item]);
             }
         }
         //执行完成

@@ -79,7 +79,7 @@ class PlanController extends AdminController
             $form->number('ipv6_num');
             $form->number('ipv4_num');
             $form->number('speed')->help('Mbps');
-            $form->number('traffic')->help('GB');
+            $form->text('traffic');
 
             $form->display('created_at');
             $form->display('updated_at');

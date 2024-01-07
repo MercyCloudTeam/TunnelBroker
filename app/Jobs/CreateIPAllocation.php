@@ -46,6 +46,7 @@ class CreateIPAllocation implements ShouldQueue
                 'type' => $this->ipPool->ip_type,
                 'node_id' => $this->ipPool->node_id,
                 'cidr' => $this->ipPool->allocation_size,
+                'intranet' => $this->ipPool->intranet,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

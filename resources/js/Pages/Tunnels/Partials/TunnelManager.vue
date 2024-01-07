@@ -1,6 +1,6 @@
 <script setup>
 
-import { ref } from 'vue';
+import {ref, watch} from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -56,7 +56,17 @@ const createTunnelForm = useForm({
     mode: '',
     node:'',
     pubkey: null,
-    port: null
+    port: null,
+    assign_ipv4_address: true,
+    assign_ipv4_intranet_address: true,
+})
+
+watch(() => createTunnelForm.assign_ipv4_intranet_address, () => {
+    // Assign Ipv4 Intranet Address must be true if Assign Ipv4 Address is true
+    if (createTunnelForm.assign_ipv4_intranet_address)
+    {
+        createTunnelForm.assign_ipv4_address = true;
+    }
 })
 
 const modeChange = () => {
@@ -182,10 +192,24 @@ const modeChange = () => {
                 <InputError :message="createTunnelForm.errors.mode" class="mt-2" />
             </div>
 
+            <div class="col-span-6">
+                <InputLabel for="assign_ipv4_address" value="Assign IPv4 Address" />
+                <input type="checkbox" class="toggle toggle-primary" v-model="createTunnelForm.assign_ipv4_address"  />
+                <p class="mt-2">Only supported protocols will be assigned IPv4 addresses</p>
+                <InputError :message="createTunnelForm.errors.assign_ipv4_address" class="mt-2" />
+            </div>
+
+            <div class="col-span-6">
+                <InputLabel for="assign_ipv4_intranet_address" value="Assign IPv4 Intranet Address" />
+                <input type="checkbox" class="toggle toggle-primary" v-model="createTunnelForm.assign_ipv4_intranet_address"  />
+                <p  class="mt-2">To allocate public IPv4 addresses, please check whether your quota is sufficient.</p>
+                <InputError :message="createTunnelForm.errors.assign_ipv4_intranet_address" class="mt-2" />
+            </div>
+
             <p v-if="createTunnelForm.recentlySuccessful" class="mr-3">
                 Created.
             </p>
-            <p v-if="createTunnelForm.hasErrors">
+            <p class=" font-bold text-xl text-error" v-if="createTunnelForm.hasErrors">
 <!--                {{ createTunnelForm.errors.createTunnel.remote.toString() }}-->
 <!--                {{ createTunnelForm.errors.createTunnel.mode.toString() }}-->
                 <span v-for="items in createTunnelForm.errors">

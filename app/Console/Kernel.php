@@ -40,10 +40,10 @@ class Kernel extends ConsoleKernel
         $schedule->job(new NodeUpdate())->everyThreeHours(); //Node状态检查
 
 
-        //每3小时将创建异常的服务状态改为等待创建（重试等待机制）
+        //每2小时将创建异常的服务状态改为等待创建（重试等待机制）
         $schedule->call(function () {
             Tunnel::where('status', 4)->update(['status' => 2]);
-        })->everyThreeHours();
+        })->everyTwoHours();
 
         //更新Cloudflare的代理IP
 //        $schedule->command('cloudflare:reload')->daily();

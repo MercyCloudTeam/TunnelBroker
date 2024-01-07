@@ -28,8 +28,7 @@ class IPPoolController extends AdminController
             $grid->column('ip');
             $grid->column('cidr');
             $grid->column('allocation_size');
-            $grid->column('subnet');
-            $grid->column('intranet');
+            $grid->column('intranet')->bool();
             $grid->column('ip_type');
             $grid->column('type');
             $grid->column('created_at');

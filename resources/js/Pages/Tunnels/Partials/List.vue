@@ -235,16 +235,18 @@ const getStatusDisplay = (status) => {
                     <h3 class="font-bold text-lg">Tunnel #{{ detailTunnel.tunnel.id }}</h3>
                     <div class="py-4">
                         <p>Remote Address: {{ detailTunnel.tunnel.remote }} </p>
-                        <p>IPV4 Address: {{ detailTunnel.tunnel.ip4 }}</p>
-                        <p>IPV6 Address: {{ detailTunnel.tunnel.ip6 }}</p>
-                        <p>Server Port: {{ detailTunnel.tunnel.srcport }}</p>
-                        <p>Local Port: {{ detailTunnel.tunnel.dstport }}</p>
+                        <p v-if="detailTunnel.tunnel.ip4">IPV4 Address: {{ detailTunnel.tunnel.ip4 }}/{{detailTunnel.tunnel.ip4_cidr}}</p>
+                        <p v-if="detailTunnel.tunnel.ip6">IPV6 Address: {{ detailTunnel.tunnel.ip6 }}/{{detailTunnel.tunnel.ip6_cidr}}</p>
+                        <p v-if="detailTunnel.tunnel.srcport">Server Port: {{ detailTunnel.tunnel.srcport }}</p>
+                        <p v-if="detailTunnel.tunnel.dstport">Local Port: {{ detailTunnel.tunnel.dstport }}</p>
+                        <p v-if="detailTunnel.tunnel.node.ip">Server IP: {{ detailTunnel.tunnel.node.ip }}</p>
+                        <p v-if="detailTunnel.tunnel.remote">Remote IP: {{ detailTunnel.tunnel.remote }}</p>
                         <p>Protocol: {{ detailTunnel.tunnel.mode }}</p>
                         <p>Status: <span
                             :class="getStatusDisplay(detailTunnel.tunnel.status).class">{{ getStatusDisplay(detailTunnel.tunnel.status).text }}</span>
                         </p>
                         <p>Created At: {{ detailTunnel.tunnel.created_at }}</p>
-                        <div v-if="detailTunnel.tunnel.config">
+                        <div v-if="detailTunnel.tunnel.mode  === 'wireguard'">
                             <p v-if="detailTunnel.tunnel.config.local.pubkey">Local Public Key: {{detailTunnel.tunnel.config.remote.pubkey}}</p>
                             <!--                        <p v-if="detailTunnel.tunnel.config.local.privkey">Local Privacy Key: {{detailTunnel.tunnel.config.local.privkey}}</p>-->
                             <p v-if="detailTunnel.tunnel.config.remote.pubkey">Local Privacy Key: {{detailTunnel.tunnel.config.remote.privkey}}</p>
