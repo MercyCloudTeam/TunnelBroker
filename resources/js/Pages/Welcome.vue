@@ -101,6 +101,7 @@ const features = [
 <template>
 
     <LoadingLayout >
+        <Head title="Index" />
         <div class="container mx-auto">
             <div class="py-24 sm:py-32 lg:py-40">
                 <div class="mx-auto max-w-7xl px-6 lg:px-8">

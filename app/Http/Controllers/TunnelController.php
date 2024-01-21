@@ -190,6 +190,13 @@ class TunnelController extends Controller
         return Redirect::back()->with('success', "Tunnel $tunnel->name Deleted");
     }
 
+    public function apiDelete(Tunnel $tunnel)
+    {
+        IPAllocation::where('tunnel_id', $tunnel->id)->update(['tunnel_id' => null]);//IP重新进入分配表
+        $tunnel->update(['status' => 7]);
+        return self::jsonResult('SUCCESS');
+    }
+
     /**
      * Store a newly created resource in storage.
      *
