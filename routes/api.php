@@ -3,6 +3,7 @@
 use App\Http\Controllers\TelegramBotController;
 use App\Http\Controllers\TunnelAPIController;
 use App\Http\Controllers\TunnelController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserPlanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -36,16 +37,22 @@ Route::prefix('/telegram/bot')->group(function (){
 
 
 Route::prefix('/manager')->middleware(['manager.auth'])->group(function () {
+
     // Tunnel routes
     Route::group(['prefix' => 'tunnel'], function () {
-        Route::post('create', [TunnelController::class, 'create']);
+        Route::post('create', [TunnelController::class, 'apiCreate']);
         Route::delete('delete/{tunnel}', [TunnelController::class, 'apiDelete']);
     });
-    // User plan routes
+
+    // User plan
     Route::prefix('/plan')->group(function () {
         Route::put('edit', [UserPlanController::class, 'edit']);
         Route::get('get', [UserPlanController::class, 'get']);
-        Route::delete('delete', [UserPlanController::class, 'delete']);
+    });
+
+    //user api
+    Route::prefix('/user')->group(function (){
+       Route::post('/new',[UserController::class,'apiCreateUser']);
     });
 });
 

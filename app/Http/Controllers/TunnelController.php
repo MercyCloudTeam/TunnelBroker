@@ -33,6 +33,8 @@ use Throwable;
 class TunnelController extends Controller
 {
 
+
+
     //TODO 动态生成
     public static array $availableModes = [
         'sit',
@@ -43,6 +45,17 @@ class TunnelController extends Controller
         'wireguard',
         'vxlan'
     ];
+
+    public function apiCreate(Request $request)
+    {
+        $this->validate($request,[
+           'user'=>'exists:users,id'
+        ]);
+
+        $user = User::find($request->user);
+
+        $this->storeAction($request,$user);
+    }
 
     /**
      * 详细页面
@@ -219,11 +232,12 @@ class TunnelController extends Controller
      * @return string
      * @throws ValidationException
      */
-    public function storeAction(TunnelRequest $request)
+    public function storeAction(TunnelRequest $request,$user = null)
     {
         $node = Node::find($request->node);
-        $user = Auth::user();
-
+        if ($user == null){
+            $user = Auth::user();
+        }
         $userTunnelLimit = $user->plan->limit ?? env('DEFAULT_USER_LIMIT');
         if ($user->tunnels->count() >= $userTunnelLimit) {
             return throw ValidationException::withMessages([
