@@ -34,6 +34,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.0",
+        "deployer/deployer": "^7.5",
         "fakerphp/faker": "^1.9.1",
         "laravel/breeze": "^2.0",
         "laravel/pint": "^1.0",

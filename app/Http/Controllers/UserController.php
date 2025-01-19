@@ -15,6 +15,8 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
+
+
     public function getIpAddressUsage(User $user)
     {
         $ipAllocation = $user->ipAllocation;

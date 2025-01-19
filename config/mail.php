@@ -43,6 +43,7 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'auth_mode' => null,
+            'scheme'=> env('MAIL_SCHEME', 'smtp'),
         ],
 
         'ses' => [
